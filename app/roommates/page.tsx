@@ -14,7 +14,6 @@ const CHORE_LIST = [
   { id: "house",    label: "House Cleaning", icon: HomeIcon, color: "text-[#ff59e3]" },
   { id: "kitchen",  label: "Kitchen Cleaning", icon: Utensils, color: "text-[#99f7ff]" },
   { id: "bathroom", label: "Bathroom", icon: Bath,     color: "text-[#ff59e3]" },
-  { id: "extra",    label: "Extra Chores", icon: TrendingUp, color: "text-[#99f7ff]" },
 ]
 
 const allRoommatesData = [
