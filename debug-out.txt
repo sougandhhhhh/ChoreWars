@@ -1,0 +1,4 @@
+START DEBUG
+PM=npm
+PMEXE=C:\Program Files\nodejs\npm.cmd
+Press any key to continue . . . 

@@ -1,0 +1,111 @@
+// Anime avatar images mapped per user (from anime/code.html reference)
+export const ANIME_AVATARS = {
+  sougandh: {
+    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDeL-bseHiOMRL-feMFzknpZk7fNLM6Tkrdi9v0tHift1L1WLTtwB7xWvuMI4x7rAgiQ8TegPROO30Mp2K0BbkFIVPnQdgX96vaOrqTEYQF_NOwzmqIDF2NGAwuLVSQZMIo_9ze2HkFGvnG8K4g6AqymgjHJZTbvXfxUBBR4JEWFUG3N80-QAittpko8o2WGIZMJHCtWuswEd1Y543fU632BI2hhwt40aveYnEoaKIZZ2GsqOBRvCfoWX0GtLjkghrA7nLJ7mR-4Wt-',
+    animeTitle: 'JAGERMEISTER',
+    animeChar: 'Goku',
+  },
+  kichu: {
+    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB5813uQCFWiRlkemE89vuzw094CGhcVLQ10TcYgg4ZOQT22NG6n5-Nbwf5RxoZK50a8J4fkpweFpJrKRhgDKjZP3IswU9noXI1duDvu-zFUKtMaCxm2xJbn6zxHNujOxBSalxT37pr3bZFANU_aCL39cEscc0CQPNbAVrTJPPir7E0UTXr4eOHS-xDT2YlY9-RGu6QvDt4DlBDoc8bktmXS5Ify5_O6tUDY5FM1Z_PqEX6hmFBFCniIHYXtPg7g3tyUArxfLh75ojy',
+    animeTitle: 'KUTTY ASURAN',
+    animeChar: 'Luffy',
+  },
+  sanjjay: {
+    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDVwiQWBDQlUowZ1yIkrG9ZcfKOGDOdmpF6WjNCLNUGxsj5-Nkq5K6P06h784lhRJDkAU9oX9-2AzQlhHGl8pbhfmWaHXC__1UPP1R-vNmqgs4s5GxfWxiZOmrpTOHncWFLyurbXJXM19WE3yZcv1BQgW8hxqRnlbXc33stb7Vvrp43qtukrhy4WWAN-vvGYcpm6Pn6cmkGEiAiOFusw0mmUJfUD7zITDYmMNmcbAE4n0mo-X6L1K9S34SvZUv3wGy4iEC2DSQtz-2S',
+    animeTitle: 'ASURAN',
+    animeChar: 'Ichigo',
+  },
+  chris: {
+    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCaLr-IKzignV3-dFKodTzJOg8gFaFjTL2oE2MuotByTV1Jx4bWD5f5TejbamLtarMdcweWOjBGUBV7Fsq0EgVuC2lGHbZgS1n1JKUcSzi6hbdYGAGuBX3EHHrNsZj59czjr4q-Qwb4M00TnrI0cQw1RSw4lEwgAU2u3cRcTbJTF4RY2_ixcxWLBrqItZWDe2xCmvD_kWsZs_ggOQ6citoRh8D12ObLmjA7GauDDckySFhPeI__FDHdOrDx3LfovU_LyAMSucy_O1HR',
+    animeTitle: 'FAKE SANGHI',
+    animeChar: 'Sasuke',
+  },
+  haady: {
+    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuApF_yZL6Wy23EuK96f-7vXTPsx3AL96IefBHC7wi-WsEdpPgkcyPtbe2JKOb-BvryjlBadhwacb6MeBoC_hBMBx5O1mMdXGzfyCqijZwWtIOaWwAghJLkwFQBM_ArpdmRvdVMXscNAUE9Wges2wQrcmTNx3eCa2TqO4jFoJhaAG4_8wQcolisiyLljhpBCWsjI3aDLyoEM7vfFGigvXlIbbdBhzP3o4PIZME7S4LvUBhoJVaqdEmjzw1N5aSAkOeno4aclhOws0ZaI',
+    animeTitle: 'KARUMBAN',
+    animeChar: 'Naruto',
+  },
+};
+
+export const DEFAULT_PROFILES = [
+  {
+    id: 'sougandh',
+    name: 'Sougandh',
+    avatar: '🔥',
+    animeAvatar: ANIME_AVATARS.sougandh,
+    tagline: 'Born to clean, forced to code',
+    totalPoints: 0,
+    weeklyPoints: 0,
+    streak: 0,
+    badges: [],
+    lastActive: null,
+    mood: null,
+    moodTimestamp: null,
+  },
+  {
+    id: 'kichu',
+    name: 'Kichu',
+    avatar: '⚡',
+    animeAvatar: ANIME_AVATARS.kichu,
+    tagline: 'Lightning fast at everything',
+    totalPoints: 0,
+    weeklyPoints: 0,
+    streak: 0,
+    badges: [],
+    lastActive: null,
+    mood: null,
+    moodTimestamp: null,
+  },
+  {
+    id: 'sanjjay',
+    name: 'Sanjjay',
+    avatar: '🎮',
+    animeAvatar: ANIME_AVATARS.sanjjay,
+    tagline: 'Treating chores like boss fights',
+    totalPoints: 0,
+    weeklyPoints: 0,
+    streak: 0,
+    badges: [],
+    lastActive: null,
+    mood: null,
+    moodTimestamp: null,
+  },
+  {
+    id: 'chris',
+    name: 'Chris',
+    avatar: '🌟',
+    animeAvatar: ANIME_AVATARS.chris,
+    tagline: 'Star player on and off the field',
+    totalPoints: 0,
+    weeklyPoints: 0,
+    streak: 0,
+    badges: [],
+    lastActive: null,
+    mood: null,
+    moodTimestamp: null,
+  },
+  {
+    id: 'haady',
+    name: 'Haady',
+    avatar: '🎯',
+    animeAvatar: ANIME_AVATARS.haady,
+    tagline: 'Always on target',
+    totalPoints: 0,
+    weeklyPoints: 0,
+    streak: 0,
+    badges: [],
+    lastActive: null,
+    mood: null,
+    moodTimestamp: null,
+  },
+];
+
+export const RANK_TITLES = [
+  { rank: 1, title: 'The Monarch', icon: '👑', color: '#ffd700' },
+  { rank: 2, title: 'The Contender', icon: '⚔️', color: '#c0c0c0' },
+  { rank: 3, title: 'The Grinder', icon: '💪', color: '#cd7f32' },
+  { rank: 4, title: 'The Slacker', icon: '😴', color: '#6b7280' },
+  { rank: 5, title: 'The Ghost', icon: '👻', color: '#4b5563' },
+];
+
+export const MOODS = ['😊', '😎', '😤', '😴', '🤯', '💀', '🔥', '😌', '🥳', '😐'];
