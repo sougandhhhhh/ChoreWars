@@ -5,51 +5,44 @@ import { useChoreStore } from '../stores/useChoreStore'
 import { supabase } from '../lib/supabase'
 
 export function SyncManager() {
-  const { hasSynced, isSyncing, syncWithSupabase, loadFromSupabase } = useChoreStore()
+  const { syncWithSupabase, loadFromSupabase, isSyncing } = useChoreStore()
 
   useEffect(() => {
-    async function sync() {
-      // 1. Initial migration/load
-      if (!hasSynced && !isSyncing) {
-        console.log('SyncManager: Starting initial migration...')
-        await syncWithSupabase()
-      } else if (hasSynced && !isSyncing) {
-        console.log('SyncManager: Pulling latest data from live site...')
-        await loadFromSupabase()
-      }
+    // 1. Initial Load/Migration
+    syncWithSupabase()
+
+    // 2. Refresh function
+    const refresh = () => {
+      console.log('SyncManager: Refreshing data...')
+      loadFromSupabase()
     }
 
-    // Initial sync
-    sync();
-
-    // Listen for visibility changes (especially useful for mobile)
-    const handleVisibilityChange = () => {
+    // 3. Visibility Listener (Mobile fix)
+    const handleVisibility = () => {
       if (document.visibilityState === 'visible') {
-        console.log('App became visible, triggering sync...');
-        sync();
+        refresh()
       }
-    };
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    // Setup Realtime Subscription
+    // 4. Realtime Listener (Broadcast fix)
     const channel = supabase
-      .channel('schema-db-changes')
+      .channel('db-changes')
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'chore_logs' },
+        { event: '*', schema: 'public' },
         () => {
-          console.log('Realtime update received!');
-          sync();
+          console.log('Realtime event detected!')
+          refresh()
         }
       )
-      .subscribe();
+      .subscribe()
 
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      supabase.removeChannel(channel);
-    };
-  }, [hasSynced, isSyncing, syncWithSupabase, loadFromSupabase])
+      document.removeEventListener('visibilitychange', handleVisibility)
+      supabase.removeChannel(channel)
+    }
+  }, [syncWithSupabase, loadFromSupabase])
 
   if (isSyncing) {
     return (
