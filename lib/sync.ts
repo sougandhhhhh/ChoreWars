@@ -11,8 +11,10 @@ export async function uploadLocalDataToSupabase(state: any) {
     const profileData = people.map(pid => {
       let totalPoints = 0
       Object.values(state.completionStats || {}).forEach((choreStats: any) => {
-        if (choreStats[pid]) {
-          totalPoints += (choreStats[pid].points || 0)
+        const stat = choreStats[pid]
+        if (stat) {
+          totalPoints += (stat.count || 0) * 100
+          totalPoints += (stat.points || 0)
         }
       })
       return { id: pid, display_name: pid.charAt(0).toUpperCase() + pid.slice(1), total_points: totalPoints }

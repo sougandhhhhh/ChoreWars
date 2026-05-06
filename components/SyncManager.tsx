@@ -5,53 +5,56 @@ import { useChoreStore } from '../stores/useChoreStore'
 import { supabase } from '../lib/supabase'
 
 export function SyncManager() {
-  const { syncWithSupabase, loadFromSupabase, isSyncing } = useChoreStore()
+  const { syncWithSupabase, loadFromSupabase } = useChoreStore()
 
   useEffect(() => {
-    // 1. Initial Load/Migration
-    syncWithSupabase()
-
-    // 2. Refresh function
-    const refresh = () => {
-      console.log('SyncManager: Refreshing data...')
-      loadFromSupabase()
-    }
-
-    // 3. Visibility Listener (Mobile fix)
-    const handleVisibility = () => {
-      if (document.visibilityState === 'visible') {
-        refresh()
+    // 1. Initial Load & Push Latest
+    console.log('SyncManager: Initializing...')
+    
+    const initializeSync = async () => {
+      try {
+        await syncWithSupabase()
+        await loadFromSupabase()
+        console.log('SyncManager: Initial sync complete')
+      } catch (e) {
+        console.error('SyncManager: Initialization failed', e)
       }
     }
-    document.addEventListener('visibilitychange', handleVisibility)
 
-    // 4. Realtime Listener (Broadcast fix)
+    initializeSync()
+
+    // 2. Visibility & Focus Listeners (Ensures sync when switching back to tab)
+    const refreshIfPossible = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('SyncManager: Tab visible, refreshing...')
+        loadFromSupabase()
+      }
+    }
+
+    window.addEventListener('focus', refreshIfPossible)
+    document.addEventListener('visibilitychange', refreshIfPossible)
+
+    // 3. Realtime Listener
     const channel = supabase
       .channel('db-changes')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public' },
-        () => {
-          console.log('Realtime event detected!')
-          refresh()
+        (payload) => {
+          console.log('SyncManager: Realtime update received', payload)
+          loadFromSupabase()
         }
       )
       .subscribe()
 
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibility)
+      window.removeEventListener('focus', refreshIfPossible)
+      document.removeEventListener('visibilitychange', refreshIfPossible)
       supabase.removeChannel(channel)
     }
   }, [syncWithSupabase, loadFromSupabase])
 
-  if (isSyncing) {
-    return (
-      <div className="fixed bottom-4 right-4 bg-primary text-primary-foreground px-4 py-2 rounded-full shadow-lg flex items-center gap-2 z-50 animate-pulse">
-        <div className="w-2 h-2 bg-white rounded-full animate-bounce" />
-        <span className="text-sm font-medium">Syncing with Live Site...</span>
-      </div>
-    )
-  }
-
+  // Removed visual syncing indicator as per user request
   return null
 }
+

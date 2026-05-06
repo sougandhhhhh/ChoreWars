@@ -166,7 +166,7 @@ export const useChoreStore = create<ChoreStore>()(
 
       syncWithSupabase: async () => {
         const state = get();
-        if (state.hasSynced || state.isSyncing) return;
+        if (state.isSyncing) return;
 
         set({ isSyncing: true });
         try {
@@ -189,21 +189,45 @@ export const useChoreStore = create<ChoreStore>()(
           const { data: warnings } = await supabase.from('warnings').select('*');
           const { data: polls } = await supabase.from('reward_polls').select('*');
 
-          if (!logs || !profiles) return;
+          if (!logs || !profiles) {
+            set({ isSyncing: false });
+            return;
+          }
 
           // Reconstruct completionStats from logs
           const newStats = getInitialStats();
           logs.forEach(log => {
             const cid = log.chore_id;
             const pid = log.user_id;
+            const helperIds = log.helper_ids || [];
+            
             if (!newStats[cid]) newStats[cid] = {};
+            
+            // 1. Credit the main logger
             if (!newStats[cid][pid]) newStats[cid][pid] = { count: 0, points: 0, lastDone: null };
             
-            newStats[cid][pid].count += 1;
+            // ONLY increment count for actual chores, not point rewards
+            if (cid !== 'reward' && cid !== 'reward-failed') {
+              newStats[cid][pid].count += 1;
+            }
+            
             newStats[cid][pid].points += (log.points_earned || 0);
             if (!newStats[cid][pid].lastDone || new Date(log.created_at) > new Date(newStats[cid][pid].lastDone)) {
               newStats[cid][pid].lastDone = log.created_at;
             }
+
+            // 2. Credit all helpers (Counts only)
+            helperIds.forEach((hid: string) => {
+              if (!newStats[cid][hid]) newStats[cid][hid] = { count: 0, points: 0, lastDone: null };
+              
+              if (cid !== 'reward' && cid !== 'reward-failed') {
+                newStats[cid][hid].count += 1;
+              }
+              
+              if (!newStats[cid][hid].lastDone || new Date(log.created_at) > new Date(newStats[cid][hid].lastDone)) {
+                newStats[cid][hid].lastDone = log.created_at;
+              }
+            });
           });
 
           // Map history
@@ -240,6 +264,13 @@ export const useChoreStore = create<ChoreStore>()(
               votes: p.votes,
               status: p.status
             })),
+            choreQueues: {
+              waste:    projectWaste(newStats),
+              water:    projectQueue("water", newStats),
+              house:    projectQueue("house", newStats),
+              kitchen:  projectQueue("kitchen", newStats),
+              bathroom: projectQueue("bathroom", newStats),
+            },
             isSyncing: false,
             hasSynced: true
           });
@@ -259,13 +290,21 @@ export const useChoreStore = create<ChoreStore>()(
 
           if (!skipCount) {
             // Credit the main logger
-            const oldLogger = newStats[cid][loggerId] || { count: 0, lastDone: null };
-            newStats[cid][loggerId] = { count: oldLogger.count + 1, lastDone: now };
+            const oldLogger = newStats[cid][loggerId] || { count: 0, points: 0, lastDone: null };
+            newStats[cid][loggerId] = { 
+              count: oldLogger.count + 1, 
+              points: (oldLogger.points || 0) + (pointsEarned || 0),
+              lastDone: now 
+            };
 
             // Credit all helpers
             helperIds.forEach(hid => {
-              const oldHelper = newStats[cid][hid] || { count: 0, lastDone: null };
-              newStats[cid][hid] = { count: oldHelper.count + 1, lastDone: now };
+              const oldHelper = newStats[cid][hid] || { count: 0, points: 0, lastDone: null };
+              newStats[cid][hid] = { 
+                count: oldHelper.count + 1, 
+                points: oldHelper.points || 0, // Helpers usually don't get bonus points unless specified
+                lastDone: now 
+              };
             });
           }
 
@@ -297,7 +336,7 @@ export const useChoreStore = create<ChoreStore>()(
               water:    projectQueue("water", newStats),
               house:    projectQueue("house", newStats),
               kitchen:  projectQueue("kitchen", newStats),
-              bathroom: projectQueue("bathroom", getInitialStats()), // bathroom remains the same
+              bathroom: projectQueue("bathroom", newStats),
             } 
           };
         });
@@ -572,6 +611,9 @@ export const useChoreStore = create<ChoreStore>()(
     {
       name: 'chore-wars-state',
       version: 3,
+      partialize: (state) => Object.fromEntries(
+        Object.entries(state).filter(([key]) => !['isSyncing', 'hasSynced'].includes(key))
+      ),
       migrate: (persistedState: any, version: number) => {
         if (version < 3) {
           // Keep old stats if they exist, otherwise use initial
