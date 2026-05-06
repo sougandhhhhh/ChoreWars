@@ -3,7 +3,7 @@
 import GlassyButton from "@/components/auth/GlassyButton"
 import { Sidebar } from "@/components/dashboard/sidebar"
 import { SyncButton } from "@/components/SyncButton"
-import { Pencil, RotateCcw, Calendar, Trash2, ShoppingCart, TrendingUp, Star, Home as HomeIcon, Camera, ChevronLeft, ChevronRight, Clock, Users, User, Mail, Phone, Lock, LogOut, Edit2, Droplets, Utensils, Bath, BarChart2, X, Sparkles } from "lucide-react"
+import { Bot, Pencil, RotateCcw, Calendar, Trash2, ShoppingCart, TrendingUp, Star, Home as HomeIcon, Camera, ChevronLeft, ChevronRight, Clock, Users, User, Mail, Phone, Lock, LogOut, Edit2, Droplets, Utensils, Bath, BarChart2, X, Sparkles } from "lucide-react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import useAuthStore from "@/stores/useAuthStore"
@@ -328,7 +328,9 @@ export default function ProfilePage() {
 
           <div className="flex gap-2">
             <SyncButton />
-
+            <button className="p-2 rounded-lg bg-secondary hover:bg-muted transition-colors">
+              <Bot className="w-5 h-5 text-muted-foreground" />
+            </button>
           </div>
         </div>
 

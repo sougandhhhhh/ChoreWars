@@ -3,7 +3,7 @@ import { useState } from "react"
 
 import { Sidebar } from "@/components/dashboard/sidebar"
 import { SyncButton } from "@/components/SyncButton"
-import { ArrowRight, AlertTriangle, Trash2, Droplets, Home as HomeIcon, Utensils, Bath, TrendingUp, X, Clock, Users, Star } from "lucide-react"
+import { Bot, ArrowRight, AlertTriangle, Trash2, Droplets, Home as HomeIcon, Utensils, Bath, TrendingUp, X, Clock, Users, Star } from "lucide-react"
 import Image from "next/image"
 import { OPERATIVES } from "@/data/operatives"
 import useAuthStore from "@/stores/useAuthStore"
@@ -129,7 +129,9 @@ export default function RoommatesPage() {
           </div>
           <div className="flex items-center gap-2">
             <SyncButton />
-
+            <button className="p-2 rounded-lg bg-secondary hover:bg-muted transition-colors">
+              <Bot className="w-5 h-5 text-muted-foreground" />
+            </button>
           </div>
         </div>
 

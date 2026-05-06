@@ -42,12 +42,6 @@ export default function RootLayout({
   return (
     <html lang="en" className="bg-background">
       <body className={`${_geist.className} font-sans antialiased bg-background text-foreground`}>
-        {/* NordanAI Chatbot Widget */}
-        <script 
-          src="https://backend.nordanai.com/public/widget.js" 
-          defer 
-          {...{ nordankey: "r2H25QMSNza5E" } as any}
-        ></script>
         <AuthGuard>
           <SyncManager />
           {children}
