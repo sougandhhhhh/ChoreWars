@@ -45,10 +45,10 @@ export default function RootLayout({
     <html lang="en" className="bg-background">
       <body className={`${_geist.className} font-sans antialiased bg-background text-foreground`}>
         <AuthGuard>
-          {/* <ClientOnly>
+          <ClientOnly>
             <SyncManager />
             <AIChatbot />
-          </ClientOnly> */}
+          </ClientOnly>
           {children}
         </AuthGuard>
         {process.env.NODE_ENV === 'production' && <Analytics />}
