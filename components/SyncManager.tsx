@@ -34,6 +34,15 @@ export function SyncManager() {
     window.addEventListener('focus', refreshIfPossible)
     document.addEventListener('visibilitychange', refreshIfPossible)
 
+    // 4. Deployment Awareness (Reload on chunk load failure)
+    const handleChunkError = (event: ErrorEvent) => {
+      if (event.message?.includes('Loading chunk') || event.message?.includes('CSS chunk')) {
+        console.log('SyncManager: New deployment detected (chunk load error). Reloading...')
+        window.location.reload()
+      }
+    }
+    window.addEventListener('error', handleChunkError)
+
     // 3. Realtime Listener
     const channel = supabase
       .channel('db-changes')
@@ -50,6 +59,7 @@ export function SyncManager() {
     return () => {
       window.removeEventListener('focus', refreshIfPossible)
       document.removeEventListener('visibilitychange', refreshIfPossible)
+      window.removeEventListener('error', handleChunkError)
       supabase.removeChannel(channel)
     }
   }, [syncWithSupabase, loadFromSupabase])
