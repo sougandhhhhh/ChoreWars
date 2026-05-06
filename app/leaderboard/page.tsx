@@ -2,7 +2,7 @@
 
 import { Sidebar } from "@/components/dashboard/sidebar"
 import { SyncButton } from "@/components/SyncButton"
-import { Bot, Trash2, Droplets, Home as HomeIcon, Sparkles, BarChart2, Utensils, Bath } from "lucide-react"
+import { Trash2, Droplets, Home as HomeIcon, Sparkles, BarChart2, Utensils, Bath } from "lucide-react"
 import Image from "next/image"
 import { OPERATIVES } from "@/data/operatives"
 import useAuthStore from "@/stores/useAuthStore"
@@ -92,9 +92,7 @@ export default function LeaderboardPage() {
           <h1 className="text-5xl font-black text-[#ff59e3] italic tracking-tight uppercase">Roomies Standings</h1>
           <div className="flex gap-2">
             <SyncButton />
-            <button className="p-2 rounded-lg bg-secondary hover:bg-muted transition-colors">
-              <Bot className="w-5 h-5 text-muted-foreground" />
-            </button>
+
           </div>
         </div>
 

@@ -2,7 +2,7 @@
 // Trigger re-compile
 
 import RewardPollingStation, { PollItem } from '../src/components/RewardPollingStation';
-import { Bot, AlertTriangle, Clock, TrendingUp, Vote, X, Star } from "lucide-react"
+import { AlertTriangle, Clock, TrendingUp, Vote, X, Star } from "lucide-react"
 import { Sidebar } from "@/components/dashboard/sidebar"
 import { OPERATIVES } from "@/data/operatives"
 import useAuthStore from "@/stores/useAuthStore"
@@ -213,9 +213,7 @@ export default function Home() {
           </div>
           <div className="flex gap-2">
             <SyncButton />
-            <button className="p-2 rounded-lg bg-secondary hover:bg-muted transition-colors">
-              <Bot className="w-5 h-5 text-muted-foreground" />
-            </button>
+
           </div>
         </div>
 

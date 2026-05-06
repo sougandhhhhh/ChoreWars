@@ -2,7 +2,7 @@
 
 import { Sidebar } from "@/components/dashboard/sidebar"
 import { SyncButton } from "@/components/SyncButton"
-import { Bot, Trash2, Droplets, Home as HomeIcon, Utensils, Bath, CheckCircle2, X, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, MessageSquare, Calendar, Clock, Users, PlusCircle, Star } from "lucide-react"
+import { Trash2, Droplets, Home as HomeIcon, Utensils, Bath, CheckCircle2, X, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, MessageSquare, Calendar, Clock, Users, PlusCircle, Star } from "lucide-react"
 import Image from "next/image"
 import { OPERATIVES } from "@/data/operatives"
 import useAuthStore from "@/stores/useAuthStore"
@@ -325,9 +325,7 @@ export default function ChoresPage() {
               Extra Chores
             </button>
             <SyncButton />
-            <button className="p-2 rounded-lg bg-secondary hover:bg-muted transition-colors">
-              <Bot className="w-5 h-5 text-muted-foreground" />
-            </button>
+
           </div>
         </div>
 

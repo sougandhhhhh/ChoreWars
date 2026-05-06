@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react"
 import { Sidebar } from "@/components/dashboard/sidebar"
 import { SyncButton } from "@/components/SyncButton"
 import { OPERATIVES } from "@/data/operatives"
-import { Dices, Check, X, Skull, Bot } from "lucide-react"
+import { Dices, Check, X, Skull } from "lucide-react"
 import Image from "next/image"
 
 // Slice colors following the cyberpunk theme
@@ -211,9 +211,7 @@ export default function LuckySpinPage() {
         {/* Header */}
         <div className="absolute top-8 right-8 z-20 flex gap-2">
           <SyncButton />
-          <button className="p-2 rounded-lg bg-secondary hover:bg-muted transition-colors">
-            <Bot className="w-5 h-5 text-muted-foreground" />
-          </button>
+
         </div>
 
         <div className="relative z-10 flex w-full h-full gap-8 max-w-6xl mx-auto items-center">
