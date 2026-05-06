@@ -24,6 +24,13 @@ export function AIChatbot() {
   const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
+  // Auto-close chat when user logs out
+  useEffect(() => {
+    if (!currentUser && isChatOpen) {
+      toggleChat()
+    }
+  }, [currentUser, isChatOpen, toggleChat])
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
@@ -37,7 +44,12 @@ export function AIChatbot() {
 
     const userMessage = input.trim()
     setInput('')
-    setMessages(prev => [...prev, { role: 'user', content: userMessage }])
+    
+    // Keep only last 5 messages (2.5 turns) to ensure we send at most 3 full turns (6 messages total)
+    setMessages(prev => {
+      const history = prev.slice(-5)
+      return [...history, { role: 'user', content: userMessage }]
+    })
     setIsLoading(true)
 
     try {
@@ -67,7 +79,7 @@ export function AIChatbot() {
             operatives: OPERATIVES,
             standings,
             completionStats,
-            history: history.slice(0, 50), // Send last 50 entries
+            history: history.slice(0, 20), // Send last 20 entries
             rewardPolls,
             warnings,
             currentUser: currentUser?.profileId
@@ -78,16 +90,22 @@ export function AIChatbot() {
       const data = await response.json()
       if (data.error) throw new Error(data.error)
 
-      setMessages(prev => [...prev, { role: 'assistant', content: data.content }])
+      setMessages(prev => {
+        const history = prev.slice(-5)
+        return [...history, { role: 'assistant', content: data.content }]
+      })
     } catch (error: any) {
       console.error('Chat Error:', error)
-      setMessages(prev => [...prev, { role: 'assistant', content: `System Error: ${error.message || 'Failed to connect'}` }])
+      setMessages(prev => {
+        const history = prev.slice(-5)
+        return [...history, { role: 'assistant', content: `System Error: ${error.message || 'Failed to connect'}` }]
+      })
     } finally {
       setIsLoading(false)
     }
   }
 
-  if (!isChatOpen) return null
+  if (!isChatOpen || !currentUser) return null
 
   return (
     <AnimatePresence>
