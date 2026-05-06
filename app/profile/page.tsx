@@ -96,7 +96,7 @@ const CHORE_LIST = [
 
 export default function ProfilePage() {
   const { currentUser: user, logout, updateProfile, profileOverrides = {} } = useAuthStore()
-  const { completionStats, history } = useChoreStore()
+  const { completionStats, history, toggleChat } = useChoreStore()
   const router = useRouter()
   
   const pid = user?.profileId || ""
@@ -328,7 +328,10 @@ export default function ProfilePage() {
 
           <div className="flex gap-2">
             <SyncButton />
-            <button className="p-2 rounded-lg bg-secondary hover:bg-muted transition-colors">
+            <button 
+              onClick={toggleChat}
+              className="p-2 rounded-lg bg-secondary hover:bg-muted transition-colors"
+            >
               <Bot className="w-5 h-5 text-muted-foreground" />
             </button>
           </div>

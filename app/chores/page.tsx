@@ -149,7 +149,7 @@ function MiniTimePicker({ hour, minute, period, onHourChange, onMinuteChange, on
 // ─── Main Page ───
 export default function ChoresPage() {
   const { profileOverrides = {}, currentUser } = useAuthStore()
-  const { choreQueues, logChore, completionStats, createRewardPoll, issueWarning } = useChoreStore()
+  const { choreQueues, logChore, completionStats, createRewardPoll, issueWarning, toggleChat } = useChoreStore()
   const searchParams = useSearchParams()
   const router = useRouter()
   const [claimModal, setClaimModal] = useState<{ choreId: string; choreName: string; accent: string; isTeam?: boolean } | null>(null)
@@ -325,7 +325,10 @@ export default function ChoresPage() {
               Extra Chores
             </button>
             <SyncButton />
-            <button className="p-2 rounded-lg bg-secondary hover:bg-muted transition-colors">
+            <button 
+              onClick={toggleChat}
+              className="p-2 rounded-lg bg-secondary hover:bg-muted transition-colors"
+            >
               <Bot className="w-5 h-5 text-muted-foreground" />
             </button>
           </div>

@@ -46,7 +46,7 @@ interface RewardPoll {
 
 export default function Home() {
   const { currentUser: user, profileOverrides = {} } = useAuthStore()
-  const { completionStats, history, warnings, rewardPolls, voteOnRewardPoll, choreQueues, issueWarning, completeWarning, logChore } = useChoreStore()
+  const { completionStats, history, warnings, rewardPolls, voteOnRewardPoll, choreQueues, issueWarning, completeWarning, logChore, toggleChat } = useChoreStore()
   const pid = user?.profileId || ""
 
   // Get user profile
@@ -213,7 +213,10 @@ export default function Home() {
           </div>
           <div className="flex gap-2">
             <SyncButton />
-            <button className="p-2 rounded-lg bg-secondary hover:bg-muted transition-colors">
+            <button 
+              onClick={toggleChat}
+              className="p-2 rounded-lg bg-secondary hover:bg-muted transition-colors"
+            >
               <Bot className="w-5 h-5 text-muted-foreground" />
             </button>
           </div>

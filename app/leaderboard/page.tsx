@@ -23,7 +23,7 @@ const CHORE_CONFIG = [
 
 export default function LeaderboardPage() {
   const { profileOverrides = {} } = useAuthStore()
-  const { completionStats } = useChoreStore()
+  const { completionStats, toggleChat } = useChoreStore()
   const [selectedCycle, setSelectedCycle] = useState("Lifetime")
 
   const getProfile = (id: string) => {
@@ -92,7 +92,10 @@ export default function LeaderboardPage() {
           <h1 className="text-5xl font-black text-[#ff59e3] italic tracking-tight uppercase">Roomies Standings</h1>
           <div className="flex gap-2">
             <SyncButton />
-            <button className="p-2 rounded-lg bg-secondary hover:bg-muted transition-colors">
+            <button 
+              onClick={toggleChat}
+              className="p-2 rounded-lg bg-secondary hover:bg-muted transition-colors"
+            >
               <Bot className="w-5 h-5 text-muted-foreground" />
             </button>
           </div>

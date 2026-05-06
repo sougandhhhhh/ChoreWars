@@ -143,6 +143,8 @@ interface ChoreStore {
   resetQueues: () => void;
   isSyncing: boolean;
   hasSynced: boolean;
+  isChatOpen: boolean;
+  toggleChat: () => void;
   syncWithSupabase: () => Promise<void>;
   loadFromSupabase: () => Promise<void>;
 }
@@ -163,6 +165,8 @@ export const useChoreStore = create<ChoreStore>()(
       },
       isSyncing: false,
       hasSynced: false,
+      isChatOpen: false,
+      toggleChat: () => set((state) => ({ isChatOpen: !state.isChatOpen })),
 
       syncWithSupabase: async () => {
         const state = get();

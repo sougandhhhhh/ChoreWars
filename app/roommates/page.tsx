@@ -41,7 +41,7 @@ const PEOPLE = ["sanjjay", "sougandh", "chris", "haady", "kichu"]
 
 export default function RoommatesPage() {
   const { profileOverrides = {}, currentUser } = useAuthStore()
-  const { completionStats, history } = useChoreStore()
+  const { completionStats, history, toggleChat } = useChoreStore()
   const [selectedLog, setSelectedLog] = useState<{ pid: string, cid: string } | null>(null)
 
   const getProfile = (id: string) => {
@@ -129,7 +129,10 @@ export default function RoommatesPage() {
           </div>
           <div className="flex items-center gap-2">
             <SyncButton />
-            <button className="p-2 rounded-lg bg-secondary hover:bg-muted transition-colors">
+            <button 
+              onClick={toggleChat}
+              className="p-2 rounded-lg bg-secondary hover:bg-muted transition-colors"
+            >
               <Bot className="w-5 h-5 text-muted-foreground" />
             </button>
           </div>
