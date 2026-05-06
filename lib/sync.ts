@@ -35,8 +35,19 @@ export async function uploadLocalDataToSupabase(state: any) {
         points_earned: h.pointsEarned || 0
       }))
 
-      const { error: logError } = await supabase.from('chore_logs').upsert(logs)
-      if (logError) console.error('DEBUG: Log Sync Error:', logError)
+      // Use upsert with conflict resolution on our unique composite key
+      const { error: logError } = await supabase.from('chore_logs').upsert(logs, { 
+        onConflict: 'created_at,user_id,chore_id' 
+      })
+      
+      if (logError) {
+        console.error('DEBUG: Log Sync Error Detail:', {
+          message: logError.message,
+          details: logError.details,
+          hint: logError.hint,
+          code: logError.code
+        })
+      }
     }
 
     // 3. Sync Warnings
