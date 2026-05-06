@@ -9,7 +9,7 @@ import { useState } from "react"
 
 import { useChoreStore } from "@/stores/useChoreStore"
 
-const PEOPLE = ["sanjjay", "sougandh", "chris", "haady", "prathik"]
+const PEOPLE = ["sanjjay", "sougandh", "chris", "haady", "kichu"]
 
 const CHORE_CONFIG = [
   { id: "waste", icon: Trash2, name: "WASTE", accent: "#ff59e3" },
