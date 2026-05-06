@@ -33,7 +33,6 @@ export const metadata: Metadata = {
 
 import { AuthGuard } from '@/components/auth/AuthGuard'
 import { SyncManager } from '@/components/SyncManager'
-import { FloatingSyncButton } from '@/components/FloatingSyncButton'
 
 export default function RootLayout({
   children,
@@ -45,7 +44,6 @@ export default function RootLayout({
       <body className={`${_geist.className} font-sans antialiased bg-background text-foreground`}>
         <AuthGuard>
           <SyncManager />
-          <FloatingSyncButton />
           {children}
         </AuthGuard>
         {process.env.NODE_ENV === 'production' && <Analytics />}
