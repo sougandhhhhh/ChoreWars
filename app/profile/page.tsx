@@ -2,6 +2,7 @@
 
 import GlassyButton from "@/components/auth/GlassyButton"
 import { Sidebar } from "@/components/dashboard/sidebar"
+import { SyncButton } from "@/components/SyncButton"
 import { Bot, Pencil, RotateCcw, Calendar, Trash2, ShoppingCart, TrendingUp, Star, Home as HomeIcon, Camera, ChevronLeft, ChevronRight, Clock, Users, User, Mail, Phone, Lock, LogOut, Edit2, Droplets, Utensils, Bath, BarChart2, X, Sparkles } from "lucide-react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
@@ -325,9 +326,12 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <button className="p-2 rounded-lg bg-secondary hover:bg-muted transition-colors">
-            <Bot className="w-5 h-5 text-muted-foreground" />
-          </button>
+          <div className="flex gap-2">
+            <SyncButton />
+            <button className="p-2 rounded-lg bg-secondary hover:bg-muted transition-colors">
+              <Bot className="w-5 h-5 text-muted-foreground" />
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-5 flex-1 min-h-0">
@@ -379,26 +383,7 @@ export default function ProfilePage() {
                         }}
                       />
                     </div>
-                    <div className="w-[165px] h-[35px]">
-                      <GlassyButton 
-                        label="FORCE CLOUD SYNC"
-                        icon={<RotateCcw className="w-3 h-3" />}
-                        background="rgba(153, 247, 255, 0.15)"
-                        hoverBackground="rgba(153, 247, 255, 0.3)"
-                        textColor="#99f7ff"
-                        fontSize="11.5px"
-                        borderRadius={8}
-                        onClick={() => {
-                          const store = (useChoreStore as any).getState?.();
-                          if (store?.loadFromSupabase) {
-                            store.loadFromSupabase();
-                            toast.success("Cloud data synced!");
-                          } else {
-                            window.location.reload();
-                          }
-                        }}
-                      />
-                    </div>
+
                     <div className="w-[165px] h-[35px]">
                       <GlassyButton 
                         label="RESET PASSCODE"

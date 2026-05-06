@@ -10,6 +10,7 @@ import { useState, useEffect } from "react"
 import { useChoreStore } from "@/stores/useChoreStore"
 import { useRouter } from "next/navigation"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
+import { SyncButton } from "@/components/SyncButton"
 
 const CHORE_TYPES = [
   { id: "waste", label: "Waste", icon: "🗑️", color: "text-[#ff59e3]" },
@@ -210,9 +211,12 @@ export default function Home() {
               Welcome, {getProfile(pid).name}!
             </h1>
           </div>
-          <button className="p-2 rounded-lg bg-secondary hover:bg-muted transition-colors">
-            <Bot className="w-5 h-5 text-muted-foreground" />
-          </button>
+          <div className="flex gap-2">
+            <SyncButton />
+            <button className="p-2 rounded-lg bg-secondary hover:bg-muted transition-colors">
+              <Bot className="w-5 h-5 text-muted-foreground" />
+            </button>
+          </div>
         </div>
 
         <div className="flex flex-col gap-5 flex-1 min-h-0">

@@ -1,6 +1,7 @@
 "use client"
 
 import { Sidebar } from "@/components/dashboard/sidebar"
+import { SyncButton } from "@/components/SyncButton"
 import { Bot, Trash2, Droplets, Home as HomeIcon, Utensils, Bath, CheckCircle2, X, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, MessageSquare, Calendar, Clock, Users, PlusCircle, Star } from "lucide-react"
 import Image from "next/image"
 import { OPERATIVES } from "@/data/operatives"
@@ -318,11 +319,12 @@ export default function ChoresPage() {
             <h1 className="text-5xl font-black text-[#ff59e3] italic tracking-tight uppercase">Chore Queue</h1>
             <p className="text-muted-foreground mt-1 text-sm">Fair rotation. No excuses. Everyone does everything.</p>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             <button onClick={openExtraModal} className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[#99f7ff]/30 bg-[#99f7ff]/10 text-[#99f7ff] font-black text-xs uppercase tracking-wider hover:bg-[#99f7ff]/20 transition-all">
               <PlusCircle className="w-4 h-4" />
               Extra Chores
             </button>
+            <SyncButton />
             <button className="p-2 rounded-lg bg-secondary hover:bg-muted transition-colors">
               <Bot className="w-5 h-5 text-muted-foreground" />
             </button>

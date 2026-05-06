@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react"
 import { Sidebar } from "@/components/dashboard/sidebar"
+import { SyncButton } from "@/components/SyncButton"
 import { OPERATIVES } from "@/data/operatives"
 import { Dices, Check, X, Skull, Bot } from "lucide-react"
 import Image from "next/image"
@@ -208,7 +209,8 @@ export default function LuckySpinPage() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(153,247,255,0.05)_0%,transparent_60%)] pointer-events-none" />
         
         {/* Header */}
-        <div className="absolute top-8 right-8 z-20">
+        <div className="absolute top-8 right-8 z-20 flex gap-2">
+          <SyncButton />
           <button className="p-2 rounded-lg bg-secondary hover:bg-muted transition-colors">
             <Bot className="w-5 h-5 text-muted-foreground" />
           </button>
