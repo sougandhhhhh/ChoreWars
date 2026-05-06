@@ -1,5 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { supabase } from '../lib/supabase'
+import { uploadLocalDataToSupabase } from '../lib/sync'
 
 const PEOPLE = ["sanjjay", "sougandh", "chris", "haady", "kichu"]
 
@@ -139,11 +141,15 @@ interface ChoreStore {
   voteOnRewardPoll: (pollId: string, voterPid: string, vote: number) => void;
   refreshPolls: () => void;
   resetQueues: () => void;
+  isSyncing: boolean;
+  hasSynced: boolean;
+  syncWithSupabase: () => Promise<void>;
+  loadFromSupabase: () => Promise<void>;
 }
 
 export const useChoreStore = create<ChoreStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       completionStats: getInitialStats(),
       history: [],
       warnings: [],
@@ -155,9 +161,99 @@ export const useChoreStore = create<ChoreStore>()(
         kitchen:  projectQueue("kitchen", getInitialStats()),
         bathroom: projectQueue("bathroom", getInitialStats()),
       },
+      isSyncing: false,
+      hasSynced: false,
+
+      syncWithSupabase: async () => {
+        const state = get();
+        if (state.hasSynced || state.isSyncing) return;
+
+        set({ isSyncing: true });
+        try {
+          const success = await uploadLocalDataToSupabase(state);
+          if (success) {
+            set({ hasSynced: true });
+          }
+        } catch (error) {
+          console.error('Sync failed:', error);
+        } finally {
+          set({ isSyncing: false });
+        }
+      },
+
+      loadFromSupabase: async () => {
+        set({ isSyncing: true });
+        try {
+          const { data: logs } = await supabase.from('chore_logs').select('*').order('created_at', { ascending: false });
+          const { data: profiles } = await supabase.from('profiles').select('*');
+          const { data: warnings } = await supabase.from('warnings').select('*');
+          const { data: polls } = await supabase.from('reward_polls').select('*');
+
+          if (!logs || !profiles) return;
+
+          // Reconstruct completionStats from logs
+          const newStats = getInitialStats();
+          logs.forEach(log => {
+            const cid = log.chore_id;
+            const pid = log.user_id;
+            if (!newStats[cid]) newStats[cid] = {};
+            if (!newStats[cid][pid]) newStats[cid][pid] = { count: 0, points: 0, lastDone: null };
+            
+            newStats[cid][pid].count += 1;
+            newStats[cid][pid].points += (log.points_earned || 0);
+            if (!newStats[cid][pid].lastDone || new Date(log.created_at) > new Date(newStats[cid][pid].lastDone)) {
+              newStats[cid][pid].lastDone = log.created_at;
+            }
+          });
+
+          // Map history
+          const newHistory = logs.map(l => ({
+            timestamp: l.created_at,
+            choreId: l.chore_id,
+            loggerId: l.user_id,
+            helperIds: l.helper_ids,
+            notes: l.notes,
+            pointsEarned: l.points_earned
+          }));
+
+          set({ 
+            completionStats: newStats, 
+            history: newHistory,
+            warnings: (warnings || []).map(w => ({
+              id: w.id,
+              targetPid: w.target_user_id,
+              choreId: w.chore_id,
+              issuedBy: w.issued_by,
+              issuedAt: w.issued_at,
+              completed: w.completed,
+              penaltyApplied: w.penalty_applied
+            })),
+            rewardPolls: (polls || []).map(p => ({
+              id: p.id,
+              choreId: p.chore_id,
+              choreName: p.chore_name,
+              choreDate: p.created_at,
+              choreType: 'extra',
+              choreHelpers: [],
+              requestedBy: p.requested_by,
+              requestedPoints: p.requested_points,
+              votes: p.votes,
+              status: p.status
+            })),
+            isSyncing: false,
+            hasSynced: true
+          });
+        } catch (e) {
+          console.error('Failed to load from Supabase:', e);
+          set({ isSyncing: false });
+        }
+      },
       logChore: (cid, loggerId, helperIds = [], notes, customName, pointsEarned, skipCount = false) => {
+        const state = get();
+        const now = new Date().toISOString();
+
+        // 1. Instant Local Update
         set((state) => {
-          const now = new Date().toISOString();
           const newStats = JSON.parse(JSON.stringify(state.completionStats));
           if (!newStats[cid]) newStats[cid] = {};
 
@@ -201,10 +297,34 @@ export const useChoreStore = create<ChoreStore>()(
               water:    projectQueue("water", newStats),
               house:    projectQueue("house", newStats),
               kitchen:  projectQueue("kitchen", newStats),
-              bathroom: projectQueue("bathroom", newStats),
+              bathroom: projectQueue("bathroom", getInitialStats()), // bathroom remains the same
             } 
           };
         });
+
+        // Background sync to Supabase if connected
+        const canSync = typeof window !== 'undefined' && 
+                        process.env.NEXT_PUBLIC_SUPABASE_URL && 
+                        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+        if (canSync) {
+          supabase.from('chore_logs').insert([{
+            created_at: now,
+            chore_id: cid,
+            user_id: loggerId,
+            helper_ids: helperIds,
+            notes: notes || '',
+            points_earned: pointsEarned || 0
+          }]).then(({ error }) => {
+            if (error) console.error('Supabase logging failed:', error);
+          });
+
+          // Also update profile points in background
+          if (pointsEarned) {
+             supabase.rpc('increment_points', { user_id: loggerId, amount: pointsEarned });
+             // helper points update would need a similar RPC or loop
+          }
+        }
       },
       resetQueues: () => {
         const stats = getInitialStats();
@@ -454,19 +574,20 @@ export const useChoreStore = create<ChoreStore>()(
       version: 3,
       migrate: (persistedState: any, version: number) => {
         if (version < 3) {
-          // Add warnings and rewardPolls to old state
+          // Keep old stats if they exist, otherwise use initial
+          const oldStats = persistedState.completionStats || getInitialStats();
           return {
             ...persistedState,
-            completionStats: getInitialStats(),
-            choreQueues: {
-              waste:    projectWaste(getInitialStats()),
-              water:    projectQueue("water", getInitialStats()),
-              house:    projectQueue("house", getInitialStats()),
-              kitchen:  projectQueue("kitchen", getInitialStats()),
-              bathroom: projectQueue("bathroom", getInitialStats()),
+            completionStats: oldStats,
+            choreQueues: persistedState.choreQueues || {
+              waste:    projectWaste(oldStats),
+              water:    projectQueue("water", oldStats),
+              house:    projectQueue("house", oldStats),
+              kitchen:  projectQueue("kitchen", oldStats),
+              bathroom: projectQueue("bathroom", oldStats),
             },
-            warnings: getInitialWarnings(),
-            rewardPolls: getInitialRewardPolls(),
+            warnings: persistedState.warnings || getInitialWarnings(),
+            rewardPolls: persistedState.rewardPolls || getInitialRewardPolls(),
           };
         }
         return persistedState;
