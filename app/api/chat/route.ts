@@ -44,6 +44,12 @@ Instructions:
       }
     );
 
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('Gemini Fetch Error:', response.status, errorData);
+      return NextResponse.json({ error: `Gemini API Error (${response.status}): ${errorData.error?.message || 'Failed to fetch'}` }, { status: response.status });
+    }
+
     const data = await response.json();
     
     if (data.error) {
