@@ -381,8 +381,28 @@ export default function ProfilePage() {
                     </div>
                     <div className="w-[165px] h-[35px]">
                       <GlassyButton 
-                        label="RESET PASSCODE"
+                        label="FORCE CLOUD SYNC"
                         icon={<RotateCcw className="w-3 h-3" />}
+                        background="rgba(153, 247, 255, 0.15)"
+                        hoverBackground="rgba(153, 247, 255, 0.3)"
+                        textColor="#99f7ff"
+                        fontSize="11.5px"
+                        borderRadius={8}
+                        onClick={() => {
+                          const store = (useChoreStore as any).getState?.();
+                          if (store?.loadFromSupabase) {
+                            store.loadFromSupabase();
+                            toast.success("Cloud data synced!");
+                          } else {
+                            window.location.reload();
+                          }
+                        }}
+                      />
+                    </div>
+                    <div className="w-[165px] h-[35px]">
+                      <GlassyButton 
+                        label="RESET PASSCODE"
+                        icon={<Lock className="w-3 h-3" />}
                         background="rgba(0,0,0,0.4)"
                         hoverBackground="rgba(255,255,255,0.1)"
                         textColor="#fff"
@@ -533,9 +553,8 @@ export default function ProfilePage() {
                 )
               })}
             </div>
-            
             {selectedDay && dailyActivities[selectedDay] && (
-              <div className="mt-4 p-3 bg-background/50 rounded-lg border border-[#99f7ff]/20">
+              <div className="mt-4 p-3 bg-background/50 rounded-lg border border-[#99f7ff]/20 shrink-0">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-bold text-[#99f7ff] uppercase tracking-wider">
                     {monthName.split(' ')[0]} {selectedDay} Activities
@@ -548,7 +567,7 @@ export default function ProfilePage() {
                   </button>
                 </div>
                 <div className="flex gap-2 flex-wrap">
-                  {dailyActivities[selectedDay].chores.map((choreId, index) => {
+                  {dailyActivities[selectedDay].chores.map((choreId: any, index: number) => {
                     const chore = CHORE_LIST.find(c => c.id === choreId);
                     if (!chore) return null;
                     const Icon = chore.icon;
