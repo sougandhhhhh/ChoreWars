@@ -59,9 +59,9 @@ export function AIChatbot() {
       if (data.error) throw new Error(data.error)
 
       setMessages(prev => [...prev, { role: 'assistant', content: data.content }])
-    } catch (error) {
+    } catch (error: any) {
       console.error('Chat Error:', error)
-      setMessages(prev => [...prev, { role: 'assistant', content: 'Error: Failed to connect to my brain. Check console or API key.' }])
+      setMessages(prev => [...prev, { role: 'assistant', content: `System Error: ${error.message || 'Failed to connect'}` }])
     } finally {
       setIsLoading(false)
     }
