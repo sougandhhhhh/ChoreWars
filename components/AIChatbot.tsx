@@ -85,9 +85,12 @@ export function AIChatbot() {
             </div>
             <div>
               <p className="text-sm font-black uppercase tracking-wider text-white">Chore Assistant</p>
-              <div className="flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                <p className="text-[10px] text-muted-foreground uppercase font-bold">Online</p>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                  <p className="text-[10px] text-muted-foreground uppercase font-bold">Online</p>
+                </div>
+                <span className="text-[8px] text-white/20 font-mono">v2.1.0-CWOS</span>
               </div>
             </div>
           </div>
