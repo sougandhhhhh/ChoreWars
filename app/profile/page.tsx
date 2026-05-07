@@ -3,7 +3,7 @@
 import GlassyButton from "@/components/auth/GlassyButton"
 import { Sidebar } from "@/components/dashboard/sidebar"
 import { SyncButton } from "@/components/SyncButton"
-import { Bot, Vote, Pencil, Calendar, Trash2, TrendingUp, Star, Home as HomeIcon, ChevronLeft, ChevronRight, Clock, Users, Lock, BarChart2, X } from "lucide-react"
+import { Bot, Vote, Pencil, Calendar, Trash2, TrendingUp, Star, Home as HomeIcon, ChevronLeft, ChevronRight, Clock, Users, Lock, BarChart2, X, Droplets, Utensils, Bath } from "lucide-react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import useAuthStore from "@/stores/useAuthStore"
