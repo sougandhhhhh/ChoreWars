@@ -19,5 +19,15 @@ export const supabase = (supabaseUrl && supabaseAnonKey)
         insert: () => Promise.resolve({ error: null }),
         delete: () => Promise.resolve({ error: null }),
         update: () => Promise.resolve({ error: null })
-      }) 
+      }),
+      channel: () => ({
+        on: () => ({
+          subscribe: () => ({})
+        }),
+        subscribe: () => ({})
+      }),
+      auth: {
+        getSession: () => Promise.resolve({ data: { session: null }, error: null }),
+        onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } })
+      }
     } as any;
