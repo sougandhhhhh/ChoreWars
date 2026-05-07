@@ -177,7 +177,7 @@ export default function ProfilePage() {
   const getStat = (cid: string) => {
     return history.filter(h => {
       const isOwner = h.loggerId === pid || h.helperIds?.includes(pid);
-      if (cid === "extra") return isOwner && h.choreId === "reward" && (h as any).category === "extra";
+      if (cid === "extra") return isOwner && (h.choreId === "extra" || h.choreId === "reward" || h.choreId === "reward-failed");
       return isOwner && h.choreId === cid;
     }).length;
   }

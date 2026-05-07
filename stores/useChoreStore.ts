@@ -242,6 +242,7 @@ export const useChoreStore = create<ChoreStore>()(
             helperIds: l.helper_ids,
             notes: l.notes,
             category: l.category,
+            customName: l.custom_name,
             pointsEarned: l.points_earned
           }));
 
@@ -359,6 +360,7 @@ export const useChoreStore = create<ChoreStore>()(
             helper_ids: helperIds,
             notes: notes || '',
             category: cid,
+            custom_name: customName || '',
             points_earned: pointsEarned || 0
           }]).then(({ error }) => {
             if (error) console.error('Supabase logging failed:', error);
@@ -622,6 +624,7 @@ export const useChoreStore = create<ChoreStore>()(
               status: updatedPoll.status,
               votes: updatedPoll.votes,
               category: updatedPoll.choreId || 'extra',
+              custom_name: `Reward: ${updatedPoll.choreName}`,
               created_at: updatedPoll.choreDate
             }).then(() => {
               uploadLocalDataToSupabase(get());

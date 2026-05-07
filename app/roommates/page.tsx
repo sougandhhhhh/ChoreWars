@@ -67,7 +67,7 @@ export default function RoommatesPage() {
       const count = history.filter(h => {
         const isOwner = h.loggerId === id || h.helperIds?.includes(id);
         if (cid === "extra") {
-          return isOwner && h.choreId === "reward" && (h as any).category === "extra";
+          return isOwner && (h.choreId === "extra" || h.choreId === "reward" || h.choreId === "reward-failed");
         }
         return isOwner && h.choreId === cid;
       }).length;
@@ -87,7 +87,7 @@ export default function RoommatesPage() {
         const count = history.filter(h => {
           const isOwner = h.loggerId === m.profileId || h.helperIds?.includes(m.profileId);
           if (c.id === "extra") {
-            return isOwner && h.choreId === "reward" && (h as any).category === "extra";
+            return isOwner && (h.choreId === "extra" || h.choreId === "reward" || h.choreId === "reward-failed");
           }
           return isOwner && h.choreId === c.id;
         }).length;
@@ -224,7 +224,9 @@ export default function RoommatesPage() {
                     <span className="text-3xl font-black text-[#99f7ff]">
                       {selectedChore.id === "all" 
                         ? Object.values(completionStats).reduce((sum, choreData) => sum + (choreData[selectedLog.pid]?.count || 0), 0)
-                        : (completionStats[selectedChore.id]?.[selectedLog.pid]?.count || 0)}
+                        : (selectedChore.id === "extra" 
+                            ? history.filter(h => (h.loggerId === selectedLog.pid || h.helperIds?.includes(selectedLog.pid)) && (h.choreId === "extra" || h.choreId === "reward" || h.choreId === "reward-failed")).length
+                            : (completionStats[selectedChore.id]?.[selectedLog.pid]?.count || 0))}
                     </span>
                   </div>
                   <div className="flex-1 bg-white/5 rounded-xl p-4 border border-white/5 flex flex-col items-center justify-center gap-1">
