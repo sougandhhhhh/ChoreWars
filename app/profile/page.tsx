@@ -312,6 +312,7 @@ export default function ProfilePage() {
         toast.success("Passcode updated! Please login again.")
         setIsResetSuccess(true)
         setIsOTPModalOpen(false)
+        setIsResetModalOpen(true) // Re-open the modal to show the success/countdown UI
       } else {
         const data = await res.json()
         toast.error(data.error || "Failed to update passcode.")
