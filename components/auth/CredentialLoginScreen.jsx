@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 export default function CredentialLoginScreen({ onLogin, onBack }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [lockoutTimer, setLockoutTimer] = useState(0);
@@ -199,11 +200,20 @@ export default function CredentialLoginScreen({ onLogin, onBack }) {
                     onBlur={() => setFocusedField(null)}
                     disabled={isLocked || isLoading}
                     placeholder="ACCESS KEY"
-                    type="password"
-                    style={{width:'100%',height:'56px',padding:'0 20px',fontSize:'14px',color:'#ffffff',background:'#201f1f',border:'none',borderRadius:'0.75rem',fontFamily:'"Space Grotesk",sans-serif',letterSpacing:'0.05em',outline:'none'}}
+                    type={showPassword ? "text" : "password"}
+                    style={{width:'100%',height:'56px',padding:'0 48px 0 20px',fontSize:'14px',color:'#ffffff',background:'#201f1f',border:'none',borderRadius:'0.75rem',fontFamily:'"Space Grotesk",sans-serif',letterSpacing:'0.05em',outline:'none'}}
                   />
-                  <div style={{position:'absolute',right:'16px',top:'50%',transform:'translateY(-50%)',color: focusedField === 'password' ? '#ff59e3' : '#494847',transition:'color 0.3s'}}>
-                    <Icon name="terminal" size={24} />
+                  <div style={{position:'absolute',right:'16px',top:'50%',transform:'translateY(-50%)',display:'flex',gap:'12px',alignItems:'center'}}>
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      style={{background:'none',border:'none',padding:0,cursor:'pointer',color: showPassword ? '#ff59e3' : '#494847',display:'flex',alignItems:'center',transition:'color 0.3s'}}
+                    >
+                      <Icon name={showPassword ? "eye_off" : "eye"} size={20} />
+                    </button>
+                    <div style={{color: focusedField === 'password' ? '#ff59e3' : '#494847',transition:'color 0.3s',display:'flex',alignItems:'center'}}>
+                      <Icon name="terminal" size={24} />
+                    </div>
                   </div>
                 </div>
               </div>
