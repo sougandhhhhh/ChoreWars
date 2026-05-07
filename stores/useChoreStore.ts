@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { supabase } from '../lib/supabase'
 import { uploadLocalDataToSupabase } from '../lib/sync'
+import toast from 'react-hot-toast'
 
 const PEOPLE = ["sanjjay", "sougandh", "chris", "haady", "kichu"]
 
@@ -363,7 +364,11 @@ export const useChoreStore = create<ChoreStore>()(
             custom_name: customName || '',
             points_earned: pointsEarned || 0
           }]).then(({ error }) => {
-            if (error) console.error('Supabase logging failed:', error);
+            if (error) {
+              console.error('Supabase logging failed:', error.message);
+              // If it fails, we keep it locally anyway, but we log why
+              toast.error(`Sync failed: ${error.message}`);
+            }
           });
 
           // Also update profile points in background
