@@ -112,6 +112,7 @@ export default function ProfilePage() {
   const [isResetSuccess, setIsResetSuccess] = useState(false)
   const [isOTPModalOpen, setIsOTPModalOpen] = useState(false)
   const [otpEmail, setOtpEmail] = useState("")
+  const [countdown, setCountdown] = useState(3)
   const [newPasscode, setNewPasscode] = useState("")
   const [confirmPasscode, setConfirmPasscode] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -125,6 +126,16 @@ export default function ProfilePage() {
 
   const confirmInputRef = useRef<HTMLInputElement>(null)
   const saveButtonRef = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    if (isResetSuccess && countdown > 0) {
+      const timer = setTimeout(() => setCountdown(c => c - 1), 1000)
+      return () => clearTimeout(timer)
+    } else if (isResetSuccess && countdown === 0) {
+      logout()
+      router.push('/login?startup=true')
+    }
+  }, [isResetSuccess, countdown, logout, router])
 
   useEffect(() => {
     refreshPolls();
@@ -466,27 +477,48 @@ export default function ProfilePage() {
       {isResetModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
           <div className="bg-[#131313] border border-[#00f1fe] shadow-[0_0_30px_rgba(0,241,254,0.3)] rounded-xl p-8 max-w-sm w-full flex flex-col gap-6">
-            <h2 className="text-xl font-bold text-[#00f1fe] tracking-widest text-center">{isResetSuccess ? "PASSCODE UPDATED" : "RESET PASSCODE"}</h2>
+            <h2 className="text-xl font-bold text-[#00f1fe] tracking-widest text-center uppercase">{isResetSuccess ? "ACCESS KEY UPDATED" : "RESET PASSCODE"}</h2>
+            
             {isResetSuccess ? (
-              <div className="flex flex-col items-center gap-6">
-                <p className="text-sm text-center text-muted-foreground">Your passcode has been successfully updated. You must log out to apply the changes.</p>
-                <button onClick={() => { logout(); router.push(`/login?view=passcode&profileId=${user?.profileId}`) }} className="w-full py-3 rounded-lg bg-[#00f1fe] text-black hover:bg-[#00f1fe]/90 transition-colors uppercase tracking-widest text-xs font-bold">Log Out</button>
+              <div className="flex flex-col items-center gap-6 py-4 text-center">
+                <div className="w-20 h-20 rounded-full bg-green-500/20 border border-green-500/50 flex items-center justify-center animate-bounce">
+                  <ShieldCheck className="w-10 h-10 text-green-500" />
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-sm leading-relaxed">Mainframe synchronized with new protocol. Re-authentication required.</p>
+                  <p className="text-cyan-400 font-black text-2xl mt-6 animate-pulse">LOGOUT IN {countdown}S</p>
+                </div>
               </div>
             ) : (
               <>
                 <div className="flex flex-col gap-4">
                   <div>
-                    <label className="text-xs text-muted-foreground uppercase tracking-widest mb-1 block">New Passcode</label>
-                    <input type="password" maxLength={4} value={newPasscode} onChange={(e) => { const v = e.target.value.replace(/[^0-9]/g, ''); setNewPasscode(v); if (v.length === 4) confirmInputRef.current?.focus(); }} className="w-full bg-black/50 border border-border rounded-lg p-3 text-white text-center tracking-[1em] focus:border-[#00f1fe] focus:outline-none" placeholder="••••" />
+                    <label className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase ml-1 block mb-1">New 4-Digit Passcode</label>
+                    <input 
+                      type="password" 
+                      maxLength={4} 
+                      value={newPasscode} 
+                      onChange={(e) => { const v = e.target.value.replace(/[^0-9]/g, ''); setNewPasscode(v); if (v.length === 4) confirmInputRef.current?.focus(); }} 
+                      className="w-full h-14 bg-black/50 border border-white/10 rounded-xl px-4 text-white text-2xl tracking-[1em] text-center focus:border-[#00f1fe] transition-all outline-none" 
+                      placeholder="••••" 
+                    />
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground uppercase tracking-widest mb-1 block">Re-enter Passcode</label>
-                    <input ref={confirmInputRef} type="password" maxLength={4} value={confirmPasscode} onChange={(e) => { const v = e.target.value.replace(/[^0-9]/g, ''); setConfirmPasscode(v); if (v.length === 4) saveButtonRef.current?.focus(); }} className="w-full bg-black/50 border border-border rounded-lg p-3 text-white text-center tracking-[1em] focus:border-[#00f1fe] focus:outline-none" placeholder="••••" />
+                    <label className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase ml-1 block mb-1">Confirm Passcode</label>
+                    <input 
+                      ref={confirmInputRef} 
+                      type="password" 
+                      maxLength={4} 
+                      value={confirmPasscode} 
+                      onChange={(e) => { const v = e.target.value.replace(/[^0-9]/g, ''); setConfirmPasscode(v); if (v.length === 4) saveButtonRef.current?.focus(); }} 
+                      className="w-full h-14 bg-black/50 border border-white/10 rounded-xl px-4 text-white text-2xl tracking-[1em] text-center focus:border-[#00f1fe] transition-all outline-none" 
+                      placeholder="••••" 
+                    />
                   </div>
                 </div>
                 <div className="flex gap-3 mt-2">
-                  <button onClick={() => { setIsResetModalOpen(false); setNewPasscode(""); setConfirmPasscode(""); }} className="flex-1 py-3 rounded-lg border border-border text-muted-foreground hover:text-white transition-colors uppercase tracking-widest text-xs font-bold">Cancel</button>
-                  <button ref={saveButtonRef} onClick={handleResetPasscode} disabled={isSubmitting} className="flex-1 py-3 rounded-lg bg-[#00f1fe] text-black hover:bg-[#00f1fe]/90 transition-colors uppercase tracking-widest text-xs font-bold disabled:opacity-50">{isSubmitting ? "Saving..." : "Save"}</button>
+                  <button onClick={() => { setIsResetModalOpen(false); setNewPasscode(""); setConfirmPasscode(""); }} className="flex-1 py-3 rounded-xl border border-white/10 text-muted-foreground hover:text-white transition-all uppercase tracking-widest text-xs font-bold">Cancel</button>
+                  <button ref={saveButtonRef} onClick={handleResetPasscode} disabled={isSubmitting} className="flex-1 py-3 rounded-xl bg-[#00f1fe] text-[#005f64] hover:brightness-110 transition-all uppercase tracking-widest text-xs font-black disabled:opacity-50">{isSubmitting ? "SENDING OTP..." : "VERIFY & SAVE"}</button>
                 </div>
               </>
             )}

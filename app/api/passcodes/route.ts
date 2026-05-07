@@ -1,32 +1,25 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs/promises';
-import path from 'path';
-
-const DB_PATH = path.join(process.cwd(), 'passcodes.json');
-
-// Default passcodes for all profiles if the file doesn't exist
-const DEFAULT_PASSCODES = {
-  sanjjay: '2255',
-  prathik: '2255',
-  sougandh: '2255',
-  haady: '2255',
-  chris: '2255',
-};
-
-async function getPasscodes() {
-  try {
-    const data = await fs.readFile(DB_PATH, 'utf-8');
-    return JSON.parse(data);
-  } catch (error) {
-    // If file doesn't exist or is invalid, create and return default
-    await fs.writeFile(DB_PATH, JSON.stringify(DEFAULT_PASSCODES, null, 2));
-    return DEFAULT_PASSCODES;
-  }
-}
+import { supabase } from '@/lib/supabase';
 
 export async function GET() {
-  const passcodes = await getPasscodes();
-  return NextResponse.json(passcodes);
+  try {
+    const { data: profiles, error } = await supabase
+      .from('profiles')
+      .select('id, passcode');
+
+    if (error) throw error;
+
+    // Convert array to the Record format { id: passcode }
+    const passcodeMap = (profiles || []).reduce((acc: Record<string, string>, p: any) => {
+      acc[p.id] = p.passcode || '2255';
+      return acc;
+    }, {});
+
+    return NextResponse.json(passcodeMap);
+  } catch (error) {
+    console.error('API Error (GET):', error);
+    return NextResponse.json({ error: 'Failed to fetch passcodes' }, { status: 500 });
+  }
 }
 
 export async function POST(request: Request) {
@@ -38,13 +31,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid data' }, { status: 400 });
     }
 
-    const passcodes = await getPasscodes();
-    passcodes[profileId] = passcode;
+    const { error } = await supabase
+      .from('profiles')
+      .update({ passcode: passcode })
+      .eq('id', profileId);
 
-    await fs.writeFile(DB_PATH, JSON.stringify(passcodes, null, 2));
+    if (error) throw error;
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    console.error('API Error (POST):', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
