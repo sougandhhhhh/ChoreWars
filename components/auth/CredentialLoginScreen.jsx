@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import useAuthStore from '../../stores/useAuthStore';
 import Icon from '../ui/Icon';
+import { supabase } from '../../lib/supabase';
+import { OTPModal } from './OTPModal';
+import toast from 'react-hot-toast';
 
 export default function CredentialLoginScreen({ onLogin, onBack }) {
   const [username, setUsername] = useState('');
@@ -9,6 +12,10 @@ export default function CredentialLoginScreen({ onLogin, onBack }) {
   const [isLoading, setIsLoading] = useState(false);
   const [lockoutTimer, setLockoutTimer] = useState(0);
   const [focusedField, setFocusedField] = useState(null);
+  const [isOtpStep, setIsOtpStep] = useState(false);
+  const [otpEmail, setOtpEmail] = useState('');
+  const [tempProfileId, setTempProfileId] = useState('');
+  
   const usernameRef = useRef(null);
   const login = useAuthStore((s) => s.login);
   const lockoutUntil = useAuthStore((s) => s.lockoutUntil);
@@ -32,11 +39,65 @@ export default function CredentialLoginScreen({ onLogin, onBack }) {
     if (isLocked) return;
     if (!username.trim() || !password.trim()) { setError('Both fields are required.'); return; }
     setIsLoading(true); setError('');
-    await new Promise((r) => setTimeout(r, 600));
+    
+    // 1. Check Credentials
     const result = login(username, password);
-    setIsLoading(false);
-    if (result.success) { onLogin(result.profileId); }
-    else { setError(result.error); setPassword(''); }
+    if (!result.success) {
+      setIsLoading(false);
+      setError(result.error); 
+      setPassword(''); 
+      return;
+    }
+
+    // 2. Fetch Email for OTP
+    try {
+      const { data: profile, error: profError } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('id', result.profileId)
+        .single();
+
+      if (profError || !profile?.email) {
+        // Fallback: If no email found, allow login (or handle as error)
+        console.warn('No email found for OTP, bypassing...');
+        onLogin(result.profileId);
+        return;
+      }
+
+      // 3. Send OTP
+      const { error: otpError } = await supabase.auth.signInWithOtp({ 
+        email: profile.email,
+        options: { shouldCreateUser: true }
+      });
+
+      if (otpError) throw otpError;
+
+      setOtpEmail(profile.email);
+      setTempProfileId(result.profileId);
+      setIsOtpStep(true);
+      toast.success('Security code sent to your email.');
+    } catch (err) {
+      console.error('OTP Error:', err);
+      setError('Failed to initiate secure login. Try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyOTP = async (code) => {
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email: otpEmail,
+        token: code,
+        type: 'email'
+      });
+      if (error) throw error;
+
+      // Success! Finalize Login
+      onLogin(tempProfileId);
+    } catch (err) {
+      toast.error('Invalid security code. Access Denied.');
+    }
   };
 
   return (
@@ -54,6 +115,15 @@ export default function CredentialLoginScreen({ onLogin, onBack }) {
         <div className="mesh-particle" style={{top:'20%',left:'80%',opacity:0.5}}></div>
         <div className="mesh-particle" style={{top:'85%',left:'45%',opacity:0.25}}></div>
       </div>
+
+      {isOtpStep && (
+        <OTPModal 
+          email={otpEmail}
+          onVerify={handleVerifyOTP}
+          onCancel={() => setIsOtpStep(false)}
+          title="SECURE LOGIN"
+        />
+      )}
 
       <main style={{position:'relative',zIndex:10,width:'100%',maxWidth:'440px',padding:'0 24px'}}>
 

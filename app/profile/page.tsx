@@ -3,7 +3,9 @@
 import GlassyButton from "@/components/auth/GlassyButton"
 import { Sidebar } from "@/components/dashboard/sidebar"
 import { SyncButton } from "@/components/SyncButton"
-import { Bot, Vote, Pencil, Calendar, Trash2, TrendingUp, Star, Home as HomeIcon, ChevronLeft, ChevronRight, Clock, Users, Lock, BarChart2, X, Droplets, Utensils, Bath } from "lucide-react"
+import { Bot, Vote, Pencil, Calendar, Trash2, TrendingUp, Star, Home as HomeIcon, ChevronLeft, ChevronRight, Clock, Users, Lock, BarChart2, X, Droplets, Utensils, Bath, ShieldCheck } from "lucide-react"
+import { OTPModal } from "@/components/auth/OTPModal"
+import { supabase } from "@/lib/supabase"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import useAuthStore from "@/stores/useAuthStore"
@@ -108,6 +110,8 @@ export default function ProfilePage() {
 
   const [isResetModalOpen, setIsResetModalOpen] = useState(false)
   const [isResetSuccess, setIsResetSuccess] = useState(false)
+  const [isOTPModalOpen, setIsOTPModalOpen] = useState(false)
+  const [otpEmail, setOtpEmail] = useState("")
   const [newPasscode, setNewPasscode] = useState("")
   const [confirmPasscode, setConfirmPasscode] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -234,24 +238,60 @@ export default function ProfilePage() {
   const handleResetPasscode = async () => {
     if (!newPasscode || newPasscode.length !== 4) { toast.error("Passcode must be exactly 4 digits."); return; }
     if (newPasscode !== confirmPasscode) { toast.error("Passcodes do not match."); return; }
+    
+    if (!email) {
+      toast.error("Please add an email to your profile first to receive OTP.");
+      return;
+    }
+
     setIsSubmitting(true)
     try {
+      const { error } = await supabase.auth.signInWithOtp({ 
+        email,
+        options: {
+          shouldCreateUser: true
+        }
+      })
+      if (error) throw error
+      
+      setOtpEmail(email)
+      setIsOTPModalOpen(true)
+      toast.success("OTP sent to your email!")
+    } catch (err) {
+      console.error("OTP Error:", err)
+      toast.error("Failed to send OTP. Please try again.")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleVerifyPasscodeOTP = async (code: string) => {
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email: otpEmail,
+        token: code,
+        type: 'email'
+      })
+      
+      if (error) throw error
+
+      // OTP verified, now save the passcode
       const res = await fetch('/api/passcodes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ profileId: user?.profileId, passcode: newPasscode })
       })
+      
       if (res.ok) {
         toast.success("Passcode updated! Please login again.")
         setIsResetSuccess(true)
+        setIsOTPModalOpen(false)
       } else {
         const data = await res.json()
         toast.error(data.error || "Failed to update passcode.")
       }
     } catch (err) {
-      toast.error("Error connecting to server.")
-    } finally {
-      setIsSubmitting(false)
+      toast.error("Invalid OTP. Access Denied.")
     }
   }
 
@@ -414,6 +454,15 @@ export default function ProfilePage() {
       </main>
 
       {/* Modals */}
+      {isOTPModalOpen && (
+        <OTPModal 
+          email={otpEmail}
+          onVerify={handleVerifyPasscodeOTP}
+          onCancel={() => setIsOTPModalOpen(false)}
+          title="RESET PASSCODE"
+        />
+      )}
+
       {isResetModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
           <div className="bg-[#131313] border border-[#00f1fe] shadow-[0_0_30px_rgba(0,241,254,0.3)] rounded-xl p-8 max-w-sm w-full flex flex-col gap-6">
