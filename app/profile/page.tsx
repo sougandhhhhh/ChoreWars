@@ -10,6 +10,7 @@ import Image from "next/image"
 import { useRouter } from "next/navigation"
 import useAuthStore from "@/stores/useAuthStore"
 import { useState, useRef, useEffect } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import toast from "react-hot-toast"
 import { OPERATIVES } from "@/data/operatives"
 import { useChoreStore } from "@/stores/useChoreStore"
@@ -464,15 +465,7 @@ export default function ProfilePage() {
         </div>
       </main>
 
-      {/* Modals */}
-      {isOTPModalOpen && (
-        <OTPModal 
-          email={otpEmail}
-          onVerify={handleVerifyPasscodeOTP}
-          onCancel={() => setIsOTPModalOpen(false)}
-          title="RESET PASSCODE"
-        />
-      )}
+
 
       {isResetModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
@@ -611,6 +604,17 @@ export default function ProfilePage() {
       )}
 
 
+      <AnimatePresence>
+        {isOTPModalOpen && (
+          <OTPModal 
+            key="otp-modal"
+            email={otpEmail}
+            onVerify={handleVerifyPasscodeOTP}
+            onCancel={() => setIsOTPModalOpen(false)}
+            title="RESET PASSCODE"
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
