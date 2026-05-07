@@ -258,20 +258,29 @@ export default function ProfilePage() {
 
     setIsSubmitting(true)
     try {
+      console.log("Sending OTP to:", email);
       const { error } = await supabase.auth.signInWithOtp({ 
         email,
         options: {
           shouldCreateUser: true
         }
       })
-      if (error) throw error
+      if (error) {
+        if (error.status === 429) {
+          toast.error("Too many requests! Please wait an hour before trying again.");
+        } else {
+          throw error;
+        }
+        return;
+      }
       
       setOtpEmail(email)
       setIsOTPModalOpen(true)
+      setIsResetModalOpen(false) // Close the passcode entry modal to show OTP box clearly
       toast.success("OTP sent to your email!")
-    } catch (err) {
+    } catch (err: any) {
       console.error("OTP Error:", err)
-      toast.error("Failed to send OTP. Please try again.")
+      toast.error(`Error: ${err.message || "Failed to send OTP"}`)
     } finally {
       setIsSubmitting(false)
     }
