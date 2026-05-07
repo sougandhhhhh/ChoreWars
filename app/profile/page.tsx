@@ -239,8 +239,8 @@ export default function ProfilePage() {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (editEmail.trim() && !emailRegex.test(editEmail.trim())) { toast.error("Please enter a valid email address."); return; }
     const digitsOnly = editPhone.replace(/\D/g, "")
-    if (digitsOnly.length !== 10) { toast.error("Phone number must be exactly 10 digits."); return; }
-    const fullPhone = editPhone.trim() ? `${editCountryCode} ${editPhone.trim()}` : ""
+    if (digitsOnly.length > 0 && digitsOnly.length !== 10) { toast.error("Phone number must be exactly 10 digits."); return; }
+    const fullPhone = digitsOnly.length === 10 ? `${editCountryCode} ${digitsOnly}` : ""
     updateProfile({ name: editName.trim(), codename: editCodename.trim(), phone: fullPhone, email: editEmail.trim() })
     toast.success("Profile updated!")
     setIsEditProfileModalOpen(false)
