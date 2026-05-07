@@ -248,19 +248,24 @@ export default function ProfilePage() {
   }
 
   const handleResetPasscode = async () => {
+    console.log("RESET BUTTON CLICKED");
     if (!newPasscode || newPasscode.length !== 4) { toast.error("Passcode must be exactly 4 digits."); return; }
     if (newPasscode !== confirmPasscode) { toast.error("Passcodes do not match."); return; }
     
-    if (!email) {
+    // Recalculate email to ensure it's fresh
+    const freshEmail = userOverride.email || user?.email || "";
+    console.log("Fresh Email detected:", freshEmail);
+
+    if (!freshEmail) {
       toast.error("Please add an email to your profile first to receive OTP.");
       return;
     }
 
     setIsSubmitting(true)
     try {
-      console.log("Sending OTP to:", email);
+      console.log("Initiating signInWithOtp for:", freshEmail);
       const { error } = await supabase.auth.signInWithOtp({ 
-        email,
+        email: freshEmail,
         options: {
           shouldCreateUser: true
         }
@@ -274,7 +279,7 @@ export default function ProfilePage() {
         return;
       }
       
-      setOtpEmail(email)
+      setOtpEmail(freshEmail)
       setIsOTPModalOpen(true)
       setIsResetModalOpen(false) // Close the passcode entry modal to show OTP box clearly
       toast.success("OTP sent to your email!")
