@@ -113,7 +113,7 @@ export default function ProfilePage() {
   const [isResetSuccess, setIsResetSuccess] = useState(false)
   const [isOTPModalOpen, setIsOTPModalOpen] = useState(false)
   const [otpEmail, setOtpEmail] = useState("")
-  const [countdown, setCountdown] = useState(3)
+  const [countdown, setCountdown] = useState(5)
   const [newPasscode, setNewPasscode] = useState("")
   const [confirmPasscode, setConfirmPasscode] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -489,12 +489,15 @@ export default function ProfilePage() {
             
             {isResetSuccess ? (
               <div className="flex flex-col items-center gap-6 py-4 text-center">
-                <div className="w-20 h-20 rounded-full bg-green-500/20 border border-green-500/50 flex items-center justify-center animate-bounce">
-                  <ShieldCheck className="w-10 h-10 text-green-500" />
+                <div className="w-20 h-20 rounded-full bg-cyan-500/20 border border-cyan-500/50 flex items-center justify-center animate-pulse">
+                  <ShieldCheck className="w-10 h-10 text-cyan-500" />
                 </div>
                 <div>
-                  <p className="text-muted-foreground text-sm leading-relaxed">Mainframe synchronized with new protocol. Re-authentication required.</p>
-                  <p className="text-cyan-400 font-black text-2xl mt-6 animate-pulse">LOGOUT IN {countdown}S</p>
+                  <p className="text-white text-sm font-bold mb-1">Login with your new passcode.</p>
+                  <p className="text-muted-foreground text-xs mb-6">Mainframe synchronized successfully.</p>
+                  <div className="bg-black/40 border border-cyan-500/20 rounded-lg py-2 px-6 inline-block">
+                    <p className="text-cyan-400 font-bold text-sm tracking-widest uppercase animate-pulse">LOGGING OUT IN {countdown}S</p>
+                  </div>
                 </div>
               </div>
             ) : (
