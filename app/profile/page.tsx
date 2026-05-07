@@ -544,6 +544,9 @@ export default function ProfilePage() {
                   </select>
                   <input type="tel" value={editPhone} onChange={(e) => setEditPhone(e.target.value.replace(/\D/g, "").slice(0, 10))} className="flex-1 bg-black/50 border border-border rounded-lg p-3 text-white" />
                 </div>
+                {editPhone.length > 0 && editPhone.length < 10 && (
+                  <p className="text-[10px] text-red-400 font-bold mt-1 ml-1 uppercase animate-pulse">Number must be 10 digits</p>
+                )}
               </div>
             </div>
             <div className="flex gap-3 mt-2">
