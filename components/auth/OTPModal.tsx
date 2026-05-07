@@ -7,11 +7,12 @@ import { ShieldCheck, ArrowRight, RefreshCcw, X, Mail } from 'lucide-react'
 interface OTPModalProps {
   email: string;
   onVerify: (code: string) => Promise<void>;
+  onResend?: () => Promise<void>;
   onCancel: () => void;
   title?: string;
 }
 
-export function OTPModal({ email, onVerify, onCancel, title = "VERIFY IDENTITY" }: OTPModalProps) {
+export function OTPModal({ email, onVerify, onResend, onCancel, title = "VERIFY IDENTITY" }: OTPModalProps) {
   const [otp, setOtp] = useState(['', '', '', '', '', ''])
   const [isVerifying, setIsVerifying] = useState(false)
   const [timer, setTimer] = useState(60)
@@ -55,11 +56,11 @@ export function OTPModal({ email, onVerify, onCancel, title = "VERIFY IDENTITY" 
     }
   }
 
-  const handleResend = () => {
-    if (!canResend) return
+  const handleResend = async () => {
+    if (!canResend || !onResend) return
     setTimer(60)
     setCanResend(false)
-    // Parent should handle resending logic
+    await onResend()
   }
 
   return (

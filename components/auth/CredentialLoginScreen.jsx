@@ -109,6 +109,19 @@ export default function CredentialLoginScreen({ onLogin, onBack }) {
     }
   };
 
+  const handleResendOTP = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOtp({ 
+        email: otpEmail,
+        options: { shouldCreateUser: true }
+      });
+      if (error) throw error;
+      toast.success('New security code sent!');
+    } catch (err) {
+      toast.error('Failed to resend code.');
+    }
+  };
+
   return (
     <div style={{position:'relative',minHeight:'100vh',width:'100%',display:'flex',alignItems:'center',justifyContent:'center',overflow:'hidden',fontFamily:'"Manrope",sans-serif',color:'#ffffff'}} className="dynamic-bg">
       {/* Background Elements */}
@@ -129,6 +142,7 @@ export default function CredentialLoginScreen({ onLogin, onBack }) {
         <OTPModal 
           email={otpEmail}
           onVerify={handleVerifyOTP}
+          onResend={handleResendOTP}
           onCancel={() => setIsOtpStep(false)}
           title="SECURE LOGIN"
         />

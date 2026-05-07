@@ -628,6 +628,7 @@ export default function ProfilePage() {
             key="otp-modal"
             email={otpEmail}
             onVerify={handleVerifyPasscodeOTP}
+            onResend={handleResetPasscode}
             onCancel={() => setIsOTPModalOpen(false)}
             title="RESET PASSCODE"
           />
