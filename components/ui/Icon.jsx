@@ -48,6 +48,8 @@ const ICON_MAP = {
   account_circle: Lucide.UserCircle,
   workspace_premium: Lucide.Award,
   arrow_forward: Lucide.ArrowRight,
+  eye: Lucide.Eye,
+  eye_off: Lucide.EyeOff,
 };
 
 /**
