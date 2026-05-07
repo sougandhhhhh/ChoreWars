@@ -447,7 +447,7 @@ export default function ProfilePage() {
 
       {isEditProfileModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-          <div className="bg-[#131313] border border-[#99f7ff] shadow-[0_0_30px_rgba(153,247,255,0.3)] rounded-xl p-8 max-md w-full flex flex-col gap-6">
+          <div className="bg-[#131313] border border-[#99f7ff] shadow-[0_0_30px_rgba(153,247,255,0.3)] rounded-xl p-8 max-w-md w-full flex flex-col gap-6">
             <h2 className="text-xl font-bold text-[#99f7ff] tracking-widest text-center">EDIT PROFILE</h2>
             <div className="flex flex-col gap-4">
               <div>
@@ -482,7 +482,7 @@ export default function ProfilePage() {
 
       {selectedLog && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-md p-6">
-          <div className="bg-[#131313] border border-[#99f7ff]/30 shadow-[0_0_50px_rgba(153,247,255,0.15)] rounded-2xl w-full max-w-xl flex flex-col overflow-hidden max-h-[80vh]">
+          <div className="bg-[#131313] border border-[#99f7ff]/30 shadow-[0_0_50px_rgba(153,247,255,0.15)] rounded-2xl w-full max-w-md flex flex-col overflow-hidden max-h-[80vh]">
             <div className="p-6 border-b border-white/10 flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="w-14 h-14 rounded-full border-2 border-[#99f7ff] overflow-hidden relative shadow-[0_0_15px_rgba(153,247,255,0.2)]">

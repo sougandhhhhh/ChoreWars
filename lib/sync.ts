@@ -6,9 +6,9 @@ export async function uploadLocalDataToSupabase(state: any) {
   try {
     const people = ["sanjjay", "sougandh", "chris", "haady", "kichu"]
     
-    // 1. Sync Profiles (Points)
+    // 1. Sync Profiles (Points) - Using update to preserve email/phone
     console.log('DEBUG: Syncing Profiles...')
-    const profileData = people.map(pid => {
+    for (const pid of people) {
       let totalPoints = 0
       Object.values(state.completionStats || {}).forEach((choreStats: any) => {
         const stat = choreStats[pid]
@@ -17,11 +17,14 @@ export async function uploadLocalDataToSupabase(state: any) {
           totalPoints += (stat.points || 0)
         }
       })
-      return { id: pid, display_name: pid.charAt(0).toUpperCase() + pid.slice(1), total_points: totalPoints }
-    })
-
-    const { error: profError } = await supabase.from('profiles').upsert(profileData)
-    if (profError) console.error('DEBUG: Profile Sync Error:', profError)
+      
+      const { error: profError } = await supabase
+        .from('profiles')
+        .update({ total_points: totalPoints })
+        .eq('id', pid)
+      
+      if (profError) console.error(`DEBUG: Profile Sync Error for ${pid}:`, profError)
+    }
 
     // 2. Sync History (Chore Logs)
     if (state.history && state.history.length > 0) {

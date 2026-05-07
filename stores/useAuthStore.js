@@ -80,7 +80,7 @@ const useAuthStore = create(
           lockoutUntil: null,
         }),
 
-      updateProfile: (updates) =>
+      updateProfile: (updates) => {
         set((state) => {
           const profileId = state.currentUser?.profileId;
           if (!profileId) return state;
@@ -89,6 +89,18 @@ const useAuthStore = create(
           const currentOverrides = safeOverrides[profileId] || {};
           const newOverrides = { ...currentOverrides, ...updates };
 
+          // Sync to Supabase
+          import('../lib/supabase').then(({ supabase }) => {
+            supabase.from('profiles').update({
+              display_name: updates.name,
+              codename: updates.codename,
+              email: updates.email,
+              phone: updates.phone
+            }).eq('id', profileId).then(({ error }) => {
+              if (error) console.error('Error syncing profile to Supabase:', error);
+            });
+          });
+
           return {
             currentUser: { ...state.currentUser, displayName: updates.name || state.currentUser.displayName },
             profileOverrides: {
@@ -96,7 +108,8 @@ const useAuthStore = create(
               [profileId]: newOverrides
             }
           };
-        }),
+        });
+      },
     }),
     {
       name: 'chorewars-auth',
