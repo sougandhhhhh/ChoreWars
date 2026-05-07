@@ -87,6 +87,6 @@ if "!MODE!"=="start" (
 
 :: ----- 6. Open browser -----
 ping -n 4 127.0.0.1 >nul
-start "" "http://localhost:3000/login?startup=true"
+start chrome "http://localhost:3000/login?startup=true"
 
 endlocal

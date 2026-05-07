@@ -659,7 +659,9 @@ export const useChoreStore = create<ChoreStore>()(
       },
     }),
     {
-      name: 'chore-wars-state',
+      name: (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) 
+            ? 'chore-wars-experimental' 
+            : 'chore-wars-state',
       version: 3,
       partialize: (state) => Object.fromEntries(
         Object.entries(state).filter(([key]) => !['isSyncing', 'hasSynced'].includes(key))
