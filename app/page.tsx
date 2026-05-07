@@ -83,7 +83,7 @@ export default function Home() {
   }, [activeWarnings.length])
   
   // Proactively complete polls that meet the threshold
-  const { rewardPolls: _allPolls, refreshPolls } = useChoreStore()
+  const { refreshPolls } = useChoreStore()
   useEffect(() => {
     refreshPolls();
   }, [refreshPolls]);
@@ -93,16 +93,24 @@ export default function Home() {
   const pollItems: PollItem[] = pendingPolls.map(poll => {
     const isParticipant = poll.requestedBy.toLowerCase() === pid.toLowerCase() || 
                           (poll.choreHelpers || []).some(h => h.toLowerCase() === pid.toLowerCase());
+    
+    // Calculate progress
+    const participants = [poll.requestedBy, ...poll.choreHelpers];
+    const eligibleVoters = OPERATIVES.filter(op => !participants.includes(op.profileId));
+    const totalVoters = eligibleVoters.length;
+    const votedCount = Object.keys(poll.votes).length;
+    const progress = totalVoters > 0 ? votedCount / totalVoters : 0;
+
     return {
       id: poll.id,
       title: poll.choreName,
       short: `${poll.requestedPoints} pts`,
-      details: `Requested by ${getProfile(poll.requestedBy).name}. Points: ${poll.requestedPoints}. Status: ${poll.status}`,
+      details: `Requested by ${getProfile(poll.requestedBy).name}. Points: ${poll.requestedPoints}. ${poll.choreHelpers.length > 0 ? 'Helpers: ' + poll.choreHelpers.map(h => getProfile(h).name).join(', ') : ''}`,
       status: poll.status,
-      hasVoted: poll.votes[pid] !== undefined || 
-                poll.requestedBy.toLowerCase() === pid.toLowerCase() || 
-                (poll.choreHelpers || []).some(h => h.toLowerCase() === pid.toLowerCase()),
-      isParticipant
+      hasVoted: poll.votes[pid] !== undefined || isParticipant,
+      isParticipant,
+      voteProgress: progress,
+      voteSummary: `${votedCount}/${totalVoters} voted`
     };
   });
 
@@ -283,7 +291,7 @@ export default function Home() {
 
             <div className="flex flex-col gap-5 min-h-0">
               {/* Recent Activity - short */}
-               <div className="bg-card rounded-xl border border-[#99f7ff]/25 p-5 flex flex-col flex-1 h-[460px] overflow-hidden">
+               <div className="bg-card rounded-xl border border-[#99f7ff]/25 p-5 flex flex-col flex-1 min-h-0 overflow-hidden">
                 <div className="flex items-center gap-2 mb-4 shrink-0">
                   <Clock className="w-5 h-5 text-[#99f7ff]" />
                   <h2 className="text-lg font-bold text-white uppercase tracking-tight">Recent Activity</h2>
@@ -333,12 +341,12 @@ export default function Home() {
                 </div>
               </div>
 
-               <div className="bg-card rounded-xl border border-[#f1fa8c]/25 p-5 flex flex-col h-[165px] overflow-hidden">
+               <div className="bg-card rounded-xl border border-[#f1fa8c]/25 p-5 flex flex-col h-[180px] shrink-0 overflow-hidden shadow-[0_0_40px_rgba(241,250,140,0.03)]">
                 <div className="flex items-center gap-2 mb-4 shrink-0">
                   <Vote className="w-5 h-5 text-[#f1fa8c]" />
-                  <h2 className="text-lg font-bold text-white uppercase tracking-tight">Reward Polling Station</h2>
+                  <h2 className="text-sm font-black text-white uppercase tracking-widest">Reward Station</h2>
                 </div>
-                <div className="flex-1 overflow-hidden">
+                <div className="flex-1 flex items-center justify-center">
                   {pollItems.length > 0 ? (
                     <RewardPollingStation 
                       items={pollItems} 
@@ -489,12 +497,6 @@ export default function Home() {
                       </button>
                     ))}
                   </div>
-                  <button
-                    onClick={() => setConfirmVote({ poll: selectedPoll, points: selectedPoll.requestedPoints })}
-                    className="rounded-2xl border border-green-500/30 bg-green-500/10 py-4 text-sm font-black uppercase tracking-[0.2em] text-green-500 hover:bg-green-500/20 transition shadow-[0_0_20px_rgba(34,197,94,0.1)]"
-                  >
-                    YES, FULL {selectedPoll.requestedPoints} POINTS
-                  </button>
                 </div>
 
                 <div className="text-[10px] text-muted-foreground mt-4 text-center italic">

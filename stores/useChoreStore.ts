@@ -5,7 +5,7 @@ import { uploadLocalDataToSupabase } from '../lib/sync'
 
 const PEOPLE = ["sanjjay", "sougandh", "chris", "haady", "kichu"]
 
-interface ChoreStat {
+export interface ChoreStat {
   count: number;
   points?: number;
   lastDone: string | null;
@@ -107,7 +107,7 @@ interface Warning {
   penaltyApplied: boolean;
 }
 
-interface RewardPoll {
+export interface RewardPoll {
   id: string;
   choreId: string;
   choreName: string;
@@ -241,6 +241,7 @@ export const useChoreStore = create<ChoreStore>()(
             loggerId: l.user_id,
             helperIds: l.helper_ids,
             notes: l.notes,
+            category: l.category,
             pointsEarned: l.points_earned
           }));
 
@@ -261,11 +262,11 @@ export const useChoreStore = create<ChoreStore>()(
               choreId: p.chore_id,
               choreName: p.chore_name,
               choreDate: p.created_at,
-              choreType: 'extra',
-              choreHelpers: [],
+              choreType: p.chore_type || 'extra',
+              choreHelpers: p.chore_helpers || [],
               requestedBy: p.requested_by,
               requestedPoints: p.requested_points,
-              votes: p.votes,
+              votes: p.votes || {},
               status: p.status
             })),
             choreQueues: {
@@ -357,6 +358,7 @@ export const useChoreStore = create<ChoreStore>()(
             user_id: loggerId,
             helper_ids: helperIds,
             notes: notes || '',
+            category: cid,
             points_earned: pointsEarned || 0
           }]).then(({ error }) => {
             if (error) console.error('Supabase logging failed:', error);
@@ -514,6 +516,20 @@ export const useChoreStore = create<ChoreStore>()(
         set((state) => ({
           rewardPolls: [...state.rewardPolls, poll],
         }));
+
+        // Sync to Supabase - using upsert for creation to handle any sync retries
+        supabase.from('reward_polls').upsert({
+          id: poll.id,
+          chore_id: poll.choreId,
+          chore_name: poll.choreName,
+          requested_by: poll.requestedBy,
+          requested_points: poll.requestedPoints,
+          status: poll.status,
+          votes: poll.votes,
+          created_at: poll.choreDate
+        }).then(() => {
+          uploadLocalDataToSupabase(get());
+        });
       },
 
       completeRewardPoll: (pollId) => {
@@ -524,91 +540,115 @@ export const useChoreStore = create<ChoreStore>()(
         }));
       },
 
-      voteOnRewardPoll: (pollId, voterPid, vote) => {
+      voteOnRewardPoll: (pollId, voterId, vote) => {
         set((state) => {
           const pollIndex = state.rewardPolls.findIndex(p => p.id === pollId);
           if (pollIndex === -1) return state;
 
           const poll = state.rewardPolls[pollIndex];
-          const participants = [poll.requestedBy.toLowerCase(), ...(poll.choreHelpers || []).map(h => h.toLowerCase())];
+          if (poll.status !== 'pending') return state;
           
-          // Guard: Participants cannot vote
-          if (participants.includes(voterPid.toLowerCase())) return state;
+          const participants = [poll.requestedBy.toLowerCase(), ...(poll.choreHelpers || []).map(h => h.toLowerCase())];
+          if (participants.includes(voterId.toLowerCase())) return state;
+
+          const updatedPoll = {
+            ...poll,
+            votes: { ...poll.votes, [voterId]: vote }
+          };
 
           const updatedPolls = [...state.rewardPolls];
-          updatedPolls[pollIndex] = { 
-            ...poll, 
-            votes: { ...poll.votes, [voterPid]: vote } 
-          };
-          
-          const currentPoll = updatedPolls[pollIndex];
-          const eligibleVoters = PEOPLE.filter(pid => !participants.includes(pid));
-          
-          const votedCount = Object.keys(currentPoll.votes).length;
-          const supportingVotes = Object.values(currentPoll.votes).filter(v => v >= currentPoll.requestedPoints).length;
-          
+          updatedPolls[pollIndex] = updatedPoll;
+
+          // Completion logic
+          const votedCount = Object.keys(updatedPoll.votes).length;
+          const supportingVotes = Object.values(updatedPoll.votes).filter(v => (v as number) >= updatedPoll.requestedPoints).length;
+          const eligibleVoters = PEOPLE.filter(pid => !participants.includes(pid.toLowerCase()));
           const voterPoolSize = eligibleVoters.length;
-          // Threshold logic: Need roughly 66% support from eligible voters
           const winThreshold = voterPoolSize >= 3 ? Math.ceil(voterPoolSize * 0.66) : voterPoolSize;
-          
+
           if (votedCount >= voterPoolSize || supportingVotes >= winThreshold) {
             const won = supportingVotes >= winThreshold;
-            currentPoll.status = 'completed';
+            updatedPoll.status = 'completed';
             
             let newStats = JSON.parse(JSON.stringify(state.completionStats));
             let newHistory = [...state.history];
-            const cid = currentPoll.choreId || 'extra';
+            const cid = updatedPoll.choreId || 'extra';
             
             if (won) {
               // Award points to ALL participants
-              participants.forEach(pid => {
+              [updatedPoll.requestedBy, ...updatedPoll.choreHelpers].forEach(pid => {
                 if (!newStats[cid]) newStats[cid] = {};
                 if (!newStats[cid][pid]) {
                   newStats[cid][pid] = { count: 0, points: 0, lastDone: null };
                 }
                 const old = newStats[cid][pid];
                 newStats[cid][pid] = {
-                  count: old.count || 0,
-                  points: (old.points || 0) + currentPoll.requestedPoints,
+                  count: (old.count || 0),
+                  points: (old.points || 0) + updatedPoll.requestedPoints,
                   lastDone: old.lastDone || new Date().toISOString()
                 };
               });
 
-              // Log result
               newHistory = [{
                 timestamp: new Date().toISOString(),
                 choreId: 'reward',
                 category: cid,
-                loggerId: currentPoll.requestedBy,
-                helperIds: currentPoll.choreHelpers,
-                notes: `WON REWARD POLL: +${currentPoll.requestedPoints} points for "${currentPoll.choreName}"`,
-                customName: `Reward: ${currentPoll.choreName}`,
-                pointsEarned: currentPoll.requestedPoints
+                loggerId: updatedPoll.requestedBy,
+                helperIds: updatedPoll.choreHelpers,
+                notes: `WON REWARD POLL: +${updatedPoll.requestedPoints} points for "${updatedPoll.choreName}"`,
+                customName: `Reward: ${updatedPoll.choreName}`,
+                pointsEarned: updatedPoll.requestedPoints
               }, ...newHistory];
             } else {
-              // Log failure
               newHistory = [{
                 timestamp: new Date().toISOString(),
                 choreId: 'reward-failed',
                 category: cid,
-                loggerId: currentPoll.requestedBy,
-                helperIds: currentPoll.choreHelpers,
-                notes: `REWARD POLL FAILED: "${currentPoll.choreName}" (no points awarded)`,
-                customName: `Failed: ${currentPoll.choreName}`,
+                loggerId: updatedPoll.requestedBy,
+                helperIds: updatedPoll.choreHelpers,
+                notes: `REWARD POLL FAILED: "${updatedPoll.choreName}"`,
+                customName: `Failed: ${updatedPoll.choreName}`,
                 pointsEarned: 0
               }, ...newHistory];
             }
 
+            // Sync final state to Supabase
+            supabase.from('reward_polls').upsert({
+              id: updatedPoll.id,
+              chore_id: updatedPoll.choreId,
+              chore_name: updatedPoll.choreName,
+              requested_by: updatedPoll.requestedBy,
+              requested_points: updatedPoll.requestedPoints,
+              status: updatedPoll.status,
+              votes: updatedPoll.votes,
+              category: updatedPoll.choreId || 'extra',
+              created_at: updatedPoll.choreDate
+            }).then(() => {
+              uploadLocalDataToSupabase(get());
+            });
+
             return {
               rewardPolls: updatedPolls,
               history: newHistory,
-              completionStats: newStats,
+              completionStats: newStats
             };
           }
 
-          return {
-            rewardPolls: updatedPolls
-          };
+          // Just sync the vote to Supabase
+          supabase.from('reward_polls').upsert({
+            id: updatedPoll.id,
+            chore_id: updatedPoll.choreId,
+            chore_name: updatedPoll.choreName,
+            requested_by: updatedPoll.requestedBy,
+            requested_points: updatedPoll.requestedPoints,
+            status: updatedPoll.status,
+            votes: updatedPoll.votes,
+            created_at: updatedPoll.choreDate
+          }).then(() => {
+            uploadLocalDataToSupabase(get());
+          });
+
+          return { rewardPolls: updatedPolls };
         });
       },
     }),

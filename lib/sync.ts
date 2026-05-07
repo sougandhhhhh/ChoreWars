@@ -32,6 +32,7 @@ export async function uploadLocalDataToSupabase(state: any) {
         user_id: h.loggerId,
         helper_ids: h.helperIds || [],
         notes: h.notes || '',
+        category: h.category || '',
         points_earned: h.pointsEarned || 0
       }))
 

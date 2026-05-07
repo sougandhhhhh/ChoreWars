@@ -2,11 +2,11 @@
 
 import { Sidebar } from "@/components/dashboard/sidebar"
 import { SyncButton } from "@/components/SyncButton"
-import { Bot, Trash2, Droplets, Home as HomeIcon, Utensils, Bath, CheckCircle2, X, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, MessageSquare, Calendar, Clock, Users, PlusCircle, Star } from "lucide-react"
+import { Bot, Trash2, Droplets, Home as HomeIcon, Utensils, Bath, CheckCircle2, X, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, MessageSquare, Calendar, Clock, Users, PlusCircle, Star, Vote } from "lucide-react"
 import Image from "next/image"
 import { OPERATIVES } from "@/data/operatives"
 import useAuthStore from "@/stores/useAuthStore"
-import { useChoreStore } from "@/stores/useChoreStore"
+import { useChoreStore, RewardPoll } from "@/stores/useChoreStore"
 import { useState, useRef, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 
@@ -149,6 +149,15 @@ function MiniTimePicker({ hour, minute, period, onHourChange, onMinuteChange, on
 // ─── Main Page ───
 export default function ChoresPage() {
   const { profileOverrides = {}, currentUser } = useAuthStore()
+  const getProfile = (id: string) => {
+    const base = OPERATIVES.find(op => op.profileId === id) || OPERATIVES[0];
+    const overrides = profileOverrides[id] || {};
+    return {
+      ...base,
+      name: overrides.name || base.name,
+      codename: overrides.codename || base.codename,
+    };
+  };
   const { choreQueues, logChore, completionStats, createRewardPoll, issueWarning, toggleChat } = useChoreStore()
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -167,7 +176,6 @@ export default function ChoresPage() {
   const [showTime, setShowTime] = useState(false)
   const calRef = useRef<HTMLDivElement>(null)
   const timeRef = useRef<HTMLDivElement>(null)
-  
   const [countdown, setCountdown] = useState(0)
   const [isCountingDown, setIsCountingDown] = useState(false)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
@@ -231,12 +239,6 @@ export default function ChoresPage() {
     }
   }, [isCountingDown, countdown, submitted])
 
-  const getProfile = (id: string) => {
-    const base = OPERATIVES.find(op => op.profileId === id) || OPERATIVES[0]
-    const safeOverrides = profileOverrides || {}
-    const overrides = safeOverrides[id] || {}
-    return { ...base, name: overrides.name || base.name }
-  }
 
   const setToday = () => { setSelectedDate(getChennaiNow()); setShowCal(false) }
   const setNow = () => {
@@ -333,6 +335,8 @@ export default function ChoresPage() {
             </button>
           </div>
         </div>
+
+
 
         <div className="grid grid-cols-5 gap-4 flex-1 min-h-0">
           {CHORES.map((chore) => {
@@ -595,6 +599,7 @@ export default function ChoresPage() {
           </div>
         </div>
       )}
+
     </div>
   )
 }

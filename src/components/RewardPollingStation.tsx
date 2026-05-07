@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
+import { Info, Vote as VoteIcon } from 'lucide-react';
 import './rewardPollingStation.css';
 
 export type PollItem = {
@@ -9,6 +10,10 @@ export type PollItem = {
   status?: string;
   hasVoted?: boolean;
   isParticipant?: boolean;
+  voteProgress?: number; // 0 to 1
+  voteSummary?: string;  // e.g. "2/4 voted"
+  points?: number;
+  requesterName?: string;
 };
 
 type Props = {
@@ -16,62 +21,47 @@ type Props = {
   onVote?: (item: PollItem) => void;
 };
 
-// Compact, expandable reward polling cards laid out in a 3-column grid.
 export const RewardPollingStation: React.FC<Props> = ({ items, onVote }) => {
-  // Track per-item expansion state
-  const [expanded, setExpanded] = useState<Set<string>>(new Set());
-
-  const toggle = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setExpanded((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
-  const handleVote = (it: PollItem, e: React.MouseEvent) => {
-    e.stopPropagation();
-    onVote?.(it);
-  };
-
-  // Show a compact short description if available, otherwise a trimmed version
-  const displayShort = (item: PollItem) => {
-    if (item.short) return item.short;
-    // Fallback: first 80 chars of details
-    const s = item.details || '';
-    return s.length > 80 ? s.substring(0, 80) + '…' : s;
-  };
-
-  // Simple safe key for list rendering
-  const gridTemplate = useMemo(() => {
-    return 'repeat(3, 1fr)';
-  }, []);
+  const displayItems = items.slice(0, 3);
 
   return (
-    <section className="rcs-reward-polling-station" aria-label="Reward Polling Station">
-      <div className="rcs-grid" style={{ gridTemplateColumns: gridTemplate as any }}>
-        {items.map((it) => {
-          const isExp = expanded.has(it.id);
+    <section className="rcs-reward-polling-boxes" aria-label="Reward Polling Station">
+      <div className="rcs-boxes-container">
+        {displayItems.map((it) => {
+          const canVote = !it.hasVoted && !it.isParticipant;
+          
           return (
-            <article key={it.id} className={`rcs-card ${isExp ? 'expanded' : ''}`} onClick={(e) => handleVote(it, e)}>
-              <header className="rcs-card-header" onClick={(e) => toggle(it.id, e)} role="button" aria-expanded={isExp} aria-label={`Toggle details for ${it.title}`} tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') toggle(it.id, e as any); }}>
-                <div className="rcs-card-title">{it.title}</div>
-                <div className="rcs-card-status">{it.status ?? ''}</div>
-              </header>
-              <div className={`rcs-card-details ${isExp ? 'open' : ''}`} aria-hidden={!isExp}>
-                <div className="rcs-card-summary">{displayShort(it)}</div>
-                <div className="rcs-details-content">{it.details}</div>
+            <div key={it.id} className={`rcs-poll-box ${it.hasVoted ? 'voted' : ''} ${it.isParticipant ? 'participant' : ''}`}>
+              <div className="rcs-box-info">
+                <span className="rcs-box-title">{it.title}</span>
+                <span className="rcs-box-subtitle">{it.voteSummary || 'Pending'}</span>
               </div>
-              <div className="rcs-card-actions">
-                <button className={`rcs-vote-btn ${it.hasVoted ? 'info-state' : ''}`} onClick={(e) => handleVote(it, e)}>
-                  {it.isParticipant ? 'PARTICIPANT' : it.hasVoted ? 'Info' : 'Vote'}
-                </button>
-              </div>
-            </article>
+              
+              <button 
+                className={`rcs-box-btn ${canVote ? 'btn-vote' : 'btn-info'}`}
+                onClick={() => onVote?.(it)}
+              >
+                {canVote ? (
+                  <>
+                    <VoteIcon className="w-3 h-3" />
+                    <span>VOTE</span>
+                  </>
+                ) : (
+                  <>
+                    <Info className="w-3 h-3" />
+                    <span>INFO</span>
+                  </>
+                )}
+              </button>
+            </div>
           );
         })}
+        
+        {/* Fill empty slots */}
+        {[...Array(Math.max(0, 3 - displayItems.length))].map((_, i) => (
+          <div key={`empty-${i}`} className="rcs-poll-box-placeholder">
+          </div>
+        ))}
       </div>
     </section>
   );
