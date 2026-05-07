@@ -26,6 +26,7 @@ export const supabase = (supabaseUrl && supabaseAnonKey)
         }),
         subscribe: () => ({})
       }),
+      removeChannel: () => Promise.resolve(),
       auth: {
         getSession: () => Promise.resolve({ data: { session: null }, error: null }),
         onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } })
