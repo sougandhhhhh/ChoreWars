@@ -7,4 +7,17 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('Supabase credentials missing. Data sync will not work.')
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = (supabaseUrl && supabaseAnonKey) 
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : { 
+      from: () => ({ 
+        select: () => ({ 
+          order: () => Promise.resolve({ data: [], error: null }),
+          select: () => ({ order: () => Promise.resolve({ data: [], error: null }) })
+        }),
+        upsert: () => Promise.resolve({ error: null }),
+        insert: () => Promise.resolve({ error: null }),
+        delete: () => Promise.resolve({ error: null }),
+        update: () => Promise.resolve({ error: null })
+      }) 
+    } as any;
