@@ -90,9 +90,9 @@ const SkillDistribution = ({ stats }: { stats: any }) => {
 
 const CHORE_LIST = [
   { id: "waste", label: "Waste", icon: Trash2, color: "text-[#ff59e3]" },
-  { id: "water", label: "Water Can", icon: Bot, color: "text-[#99f7ff]" },
-  { id: "kitchen", label: "Kitchen Cleaning", icon: Bot, color: "text-[#ffb86c]" },
-  { id: "bathroom", label: "Bathroom", icon: Bot, color: "text-[#8be9fd]" },
+  { id: "water", label: "Water Can", icon: Droplets, color: "text-[#99f7ff]" },
+  { id: "kitchen", label: "Kitchen Cleaning", icon: Utensils, color: "text-[#ffb86c]" },
+  { id: "bathroom", label: "Bathroom", icon: Bath, color: "text-[#8be9fd]" },
   { id: "house", label: "House Cleaning", icon: HomeIcon, color: "text-[#50fa7b]" },
   { id: "extra", label: "Extra Chore", icon: TrendingUp, color: "text-[#f1fa8c]" },
 ];
@@ -505,11 +505,23 @@ export default function ProfilePage() {
               }).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).map((log, i) => (
                 <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col gap-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-xs font-black text-white uppercase">{log.customName || log.choreId}</span>
-                    <span className="text-[10px] text-muted-foreground font-bold">{new Date(log.timestamp).toLocaleDateString()}</span>
+                    <span className="text-xs font-black text-white uppercase">
+                      {log.customName || CHORE_LIST.find(c => c.id === log.choreId)?.label || log.choreId}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground font-bold">
+                      {new Date(log.timestamp).toLocaleDateString()} • {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
                   </div>
+                  {log.helperIds && log.helperIds.length > 0 && (
+                    <div className="flex items-center gap-1.5">
+                      <Users className="w-3 h-3 text-[#99f7ff]" />
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase">Partner: {log.helperIds.map(hid => getProfile(hid).name).join(", ")}</span>
+                    </div>
+                  )}
                   {log.notes && <p className="text-[11px] text-muted-foreground italic">"{log.notes}"</p>}
-                  {log.pointsEarned && <div className="text-[10px] font-black text-yellow-400 mt-1 uppercase">+{log.pointsEarned} REWARD POINTS</div>}
+                  {log.pointsEarned !== undefined && log.pointsEarned > 0 && (
+                    <div className="text-[10px] font-black text-yellow-400 mt-1 uppercase">+{log.pointsEarned} REWARD POINTS</div>
+                  )}
                 </div>
               ))}
             </div>
