@@ -65,20 +65,28 @@ export default function CredentialLoginScreen({ onLogin, onBack }) {
       }
 
       // 3. Send OTP
+      console.log("Initiating login OTP for:", profile.email);
       const { error: otpError } = await supabase.auth.signInWithOtp({ 
         email: profile.email,
         options: { shouldCreateUser: true }
       });
 
-      if (otpError) throw otpError;
+      if (otpError) {
+        if (otpError.status === 429) {
+          setError('Too many login attempts. Please wait an hour.');
+        } else {
+          setError(`Login Security Error: ${otpError.message}`);
+        }
+        return;
+      }
 
       setOtpEmail(profile.email);
       setTempProfileId(result.profileId);
       setIsOtpStep(true);
       toast.success('Security code sent to your email.');
     } catch (err) {
-      console.error('OTP Error:', err);
-      setError('Failed to initiate secure login. Try again.');
+      console.error('Full Login Error:', err);
+      setError('Failed to connect to security server. Try again.');
     } finally {
       setIsLoading(false);
     }
