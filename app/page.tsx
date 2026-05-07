@@ -121,7 +121,7 @@ export default function Home() {
   // Get recent chores from roommates
   useEffect(() => {
     const recent = history
-      .filter(log => (log.loggerId !== pid || log.choreId === 'reward' || log.choreId === 'reward-failed') && new Date(log.timestamp) > new Date(Date.now() - 24 * 60 * 60 * 1000))
+      .filter(log => new Date(log.timestamp) > new Date(Date.now() - 24 * 60 * 60 * 1000))
       .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
       .slice(0, 5);
     
@@ -318,7 +318,9 @@ export default function Home() {
                                   </span>
                                 ) : (
                                   <>
-                                    <span className="font-black">{logger.name}</span> completed {chore}
+                                    <span className="font-black">
+                                      {[logger.name, ...(log.helperIds || []).map((hid: string) => getProfile(hid).name)].join(" & ")}
+                                    </span> completed {chore}
                                   </>
                                 )}
                                 {log?.pointsEarned !== undefined && log.pointsEarned > 0 && (

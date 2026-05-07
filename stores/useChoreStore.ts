@@ -303,12 +303,12 @@ export const useChoreStore = create<ChoreStore>()(
               lastDone: now 
             };
 
-            // Credit all helpers
+            // Credit all helpers with same points as logger
             helperIds.forEach(hid => {
               const oldHelper = newStats[cid][hid] || { count: 0, points: 0, lastDone: null };
               newStats[cid][hid] = { 
                 count: oldHelper.count + 1, 
-                points: oldHelper.points || 0, // Helpers usually don't get bonus points unless specified
+                points: (oldHelper.points || 0) + (pointsEarned || 0), 
                 lastDone: now 
               };
             });
@@ -369,7 +369,10 @@ export const useChoreStore = create<ChoreStore>()(
           // Also update profile points in background
           if (pointsEarned) {
              supabase.rpc('increment_points', { user_id: loggerId, amount: pointsEarned });
-             // helper points update would need a similar RPC or loop
+             // Also increment points for helpers in Supabase
+             helperIds.forEach(hid => {
+               supabase.rpc('increment_points', { user_id: hid, amount: pointsEarned });
+             });
           }
         }
       },
