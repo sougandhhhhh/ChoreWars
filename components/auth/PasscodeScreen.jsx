@@ -95,18 +95,17 @@ export default function PasscodeScreen({ profileId, onSuccess, onBack }) {
       backgroundSize: '50px 50px',
       color: '#ffffff',
       minHeight: '100vh',
-      height: '100vh',
-      overflow: 'hidden',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '24px',
+      padding: '80px 24px 40px',
       position: 'relative',
-      fontFamily: '"Manrope", sans-serif'
+      fontFamily: '"Manrope", sans-serif',
+      overflowY: 'auto'
     }}>
       
       {/* Back Button */}
-      <div style={{position:'absolute',top:'32px',left:'32px',zIndex:20}}>
+      <div style={{position:'absolute',top:'24px',left:'24px',zIndex:20}}>
         <button type="button" onClick={onBack} style={{display:'flex',alignItems:'center',gap:'8px',color:'#adaaaa',background:'none',border:'none',cursor:'pointer',transition:'color 0.3s'}} onMouseEnter={(e)=>e.currentTarget.style.color='#99f7ff'} onMouseLeave={(e)=>e.currentTarget.style.color='#adaaaa'}>
           <Icon name="arrow_back" size={20} />
           <span style={{fontFamily:'"Space Grotesk",sans-serif',fontSize:'14px',textTransform:'uppercase',letterSpacing:'0.1em'}}>Back</span>
@@ -115,17 +114,17 @@ export default function PasscodeScreen({ profileId, onSuccess, onBack }) {
 
       <main style={{width: '100%', maxWidth: '300px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '32px'}}>
         
-        <header style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px'}}>
+        <header style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px'}}>
           <div style={{position: 'relative'}} className="group">
             {/* Ambient Profile Glow */}
             <div style={{
               position: 'absolute', inset: '-4px', 
               background: colorKey === 'magenta' ? 'linear-gradient(to top right, #ff59e3, #00f1fe)' : 'linear-gradient(to top right, #00f1fe, #ff59e3)', 
-              borderRadius: '9999px', filter: 'blur(16px)', opacity: 0.4, transition: 'opacity 0.5s'
+              borderRadius: '9999px', filter: 'blur(12px)', opacity: 0.4, transition: 'opacity 0.5s'
             }}></div>
             
             <div style={{
-              position: 'relative', width: '100px', height: '100px', borderRadius: '50%', overflow: 'hidden',
+              position: 'relative', width: 'clamp(70px, 15vw, 100px)', height: 'clamp(70px, 15vw, 100px)', borderRadius: '50%', overflow: 'hidden',
               border: colorKey === 'magenta' ? '2px solid rgba(255,89,227,0.3)' : '2px solid rgba(0,241,254,0.3)'
             }}>
               <img 
@@ -139,7 +138,7 @@ export default function PasscodeScreen({ profileId, onSuccess, onBack }) {
           <div style={{textAlign: 'center'}}>
             <h1 style={{
               fontFamily: '"Space Grotesk", sans-serif',
-              fontSize: '30px', fontWeight: 700, letterSpacing: '0.4em',
+              fontSize: 'clamp(24px, 5vw, 30px)', fontWeight: 700, letterSpacing: '0.4em',
               color: colorKey === 'magenta' ? '#ff59e3' : '#00f1fe',
               textShadow: colorKey === 'magenta' ? '0 0 10px rgba(255,89,227,0.5)' : '0 0 10px rgba(0,241,254,0.5)',
               textTransform: 'uppercase',
@@ -149,9 +148,9 @@ export default function PasscodeScreen({ profileId, onSuccess, onBack }) {
             </h1>
             <p style={{
               fontFamily: '"JetBrains Mono", monospace',
-              fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em',
+              fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.1em',
               color: colorKey === 'magenta' ? '#ff59e3' : '#00f1fe',
-              marginTop: '8px', opacity: 0.8
+              marginTop: '4px', opacity: 0.8
             }}>
               SECURE ACCESS PROTOCOL
             </p>
@@ -234,13 +233,15 @@ export default function PasscodeScreen({ profileId, onSuccess, onBack }) {
                 border: '1px solid #ff716c',
                 boxShadow: '0 0 30px rgba(255, 113, 108, 0.4)',
                 borderRadius: '16px',
-                padding: '32px',
+                padding: '24px',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: '24px',
-                maxWidth: '320px',
-                textAlign: 'center'
+                gap: '20px',
+                width: '100%',
+                maxWidth: '280px',
+                textAlign: 'center',
+                margin: '20px'
               }}
             >
               <div style={{color: '#ff716c'}}>

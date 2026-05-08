@@ -21,9 +21,13 @@ const CHORE_CONFIG = [
   { id: "extra", icon: Sparkles, name: "EXTRA CHORES", accent: "#99f7ff" },
 ]
 
+import { useUIStore } from "@/stores/useUIStore"
+import { Menu } from "lucide-react"
+
 export default function LeaderboardPage() {
   const { profileOverrides = {} } = useAuthStore()
   const { completionStats, toggleChat } = useChoreStore()
+  const { toggleSidebar } = useUIStore()
   const [selectedCycle, setSelectedCycle] = useState("Lifetime")
 
   const getProfile = (id: string) => {
@@ -83,14 +87,25 @@ export default function LeaderboardPage() {
   });
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className="flex min-h-screen bg-background">
       <Sidebar activePage="leaderboard" />
 
-      <main className="flex-1 ml-64 flex flex-col overflow-hidden p-6">
+      <main className="flex-1 lg:ml-64 flex flex-col p-4 md:p-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-5 shrink-0">
-          <h1 className="text-5xl font-black text-[#ff59e3] italic tracking-tight uppercase">Roomies Standings</h1>
-          <div className="flex gap-2">
+        <div className="flex items-start justify-between mb-5 shrink-0 gap-4">
+          <div className="flex items-start gap-3 flex-1 min-w-0">
+            <button 
+              onClick={toggleSidebar}
+              className="p-2 mt-1 rounded-lg bg-secondary hover:bg-muted transition-colors lg:hidden shrink-0"
+            >
+              <Menu className="w-6 h-6 text-muted-foreground" />
+            </button>
+            <div className="min-w-0">
+              <h1 className="text-3xl md:text-5xl font-black text-[#ff59e3] italic tracking-tight uppercase truncate">Roomies Standings</h1>
+              <p className="text-muted-foreground mt-1 text-sm truncate">The elite. The average. The slackers.</p>
+            </div>
+          </div>
+          <div className="flex gap-2 shrink-0">
             <SyncButton />
             <button 
               onClick={toggleChat}
@@ -101,51 +116,34 @@ export default function LeaderboardPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-5 gap-4 flex-1 min-h-0">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-5 flex-1">
 
           {/* Left column */}
-          <div className="col-span-3 flex flex-col gap-4 min-h-0">
+          <div className="lg:col-span-3 flex flex-col gap-5 min-h-0">
 
             {/* Podium */}
-            <div className="bg-card rounded-xl border border-border p-5 flex-1 min-h-0 flex flex-col relative overflow-hidden">
+            <div className="bg-card rounded-xl border border-border p-5 flex flex-col relative overflow-hidden min-h-[400px]">
               {/* Podium Filters */}
-              <div className="absolute top-4 right-4 z-10 flex gap-2">
-                <button 
-                  onClick={() => setSelectedCycle("Month")}
-                  className={`text-[10px] px-3 py-1 rounded-full border transition-colors ${
-                    selectedCycle === "Month" 
-                      ? "text-[#99f7ff] border-[#99f7ff]/50 bg-[#99f7ff]/10" 
-                      : "text-muted-foreground border-border hover:text-white"
-                  }`}
-                >
-                  Month
-                </button>
-                <button 
-                  onClick={() => setSelectedCycle("Semester")}
-                  className={`text-[10px] px-3 py-1 rounded-full border transition-colors ${
-                    selectedCycle === "Semester" 
-                      ? "text-[#99f7ff] border-[#99f7ff]/50 bg-[#99f7ff]/10" 
-                      : "text-muted-foreground border-border hover:text-white"
-                  }`}
-                >
-                  Semester
-                </button>
-                <button 
-                  onClick={() => setSelectedCycle("Lifetime")}
-                  className={`text-[10px] px-3 py-1 rounded-full border transition-colors ${
-                    selectedCycle === "Lifetime" 
-                      ? "text-[#99f7ff] border-[#99f7ff]/50 bg-[#99f7ff]/10" 
-                      : "text-muted-foreground border-border hover:text-white"
-                  }`}
-                >
-                  Lifetime
-                </button>
+              <div className="flex flex-wrap gap-2 mb-8 md:absolute md:top-4 md:right-4 md:z-10 md:mb-0">
+                {["Month", "Semester", "Lifetime"].map(cycle => (
+                  <button 
+                    key={cycle}
+                    onClick={() => setSelectedCycle(cycle)}
+                    className={`text-[10px] px-3 py-1 rounded-full border transition-colors ${
+                      selectedCycle === cycle 
+                        ? "text-[#99f7ff] border-[#99f7ff]/50 bg-[#99f7ff]/10" 
+                        : "text-muted-foreground border-border hover:text-white"
+                    }`}
+                  >
+                    {cycle}
+                  </button>
+                ))}
               </div>
 
-              <div className="flex items-end justify-center gap-6 h-full pb-2 pt-8 mt-3">
+              <div className="flex flex-col md:flex-row items-end justify-center gap-6 md:gap-4 lg:gap-6 h-full pb-2 pt-4 md:pt-12">
                 {/* 2nd Place */}
                 {podium[0] && (
-                  <div className="flex flex-col items-center">
+                  <div className="flex flex-col items-center order-2 md:order-1">
                     <div className="text-gray-300 text-3xl mb-1 drop-shadow-[0_0_10px_rgba(156,163,175,0.5)]">🥈</div>
                     <div className="relative mb-2">
                       <div className="w-20 h-20 rounded-full border-2 border-[#99f7ff]/60 overflow-hidden relative shadow-[0_0_15px_rgba(153,247,255,0.3)]">
@@ -155,14 +153,14 @@ export default function LeaderboardPage() {
                     </div>
                     <p className="text-white font-semibold text-base mt-1 text-center truncate w-24">{podium[0].name}</p>
                     <p className="text-[#99f7ff] text-2xl font-bold">{podium[0].pts.toLocaleString()}</p>
-                    <p className="text-muted-foreground text-xs font-bold tracking-widest">PTS</p>
-                    <div className="w-24 h-28 bg-gradient-to-t from-transparent to-[#99f7ff]/20 rounded-t-xl mt-3 border-t-[3px] border-[#99f7ff]/50" />
+                    <p className="text-muted-foreground text-xs font-bold tracking-widest uppercase">pts</p>
+                    <div className="hidden md:block w-24 h-28 bg-gradient-to-t from-transparent to-[#99f7ff]/20 rounded-t-xl mt-3 border-t-[3px] border-[#99f7ff]/50" />
                   </div>
                 )}
 
                 {/* 1st Place */}
                 {podium[1] && (
-                  <div className="flex flex-col items-center -mb-2">
+                  <div className="flex flex-col items-center order-1 md:order-2 md:-mb-2">
                     <div className="text-yellow-400 text-3xl mb-1 drop-shadow-[0_0_10px_rgba(250,204,21,0.5)]">🥇</div>
                     <div className="relative mb-2">
                       <div className="w-24 h-24 rounded-full border-[3px] border-yellow-400 overflow-hidden relative shadow-[0_0_25px_rgba(250,204,21,0.4)]">
@@ -172,14 +170,14 @@ export default function LeaderboardPage() {
                     </div>
                     <p className="text-white font-bold text-lg mt-1 text-center truncate w-28">{podium[1].name}</p>
                     <p className="text-[#ff59e3] text-4xl font-black">{podium[1].pts.toLocaleString()}</p>
-                    <p className="text-muted-foreground text-xs font-bold tracking-widest">PTS</p>
-                    <div className="w-32 h-40 bg-gradient-to-t from-transparent to-yellow-400/20 rounded-t-xl mt-3 border-t-[3px] border-yellow-400/60" />
+                    <p className="text-muted-foreground text-xs font-bold tracking-widest uppercase">pts</p>
+                    <div className="hidden md:block w-32 h-40 bg-gradient-to-t from-transparent to-yellow-400/20 rounded-t-xl mt-3 border-t-[3px] border-yellow-400/60" />
                   </div>
                 )}
 
                 {/* 3rd Place */}
                 {podium[2] && (
-                  <div className="flex flex-col items-center">
+                  <div className="flex flex-col items-center order-3 md:order-3">
                     <div className="text-amber-600 text-3xl mb-1 drop-shadow-[0_0_10px_rgba(217,119,6,0.5)]">🥉</div>
                     <div className="relative mb-2">
                       <div className="w-20 h-20 rounded-full border-2 border-[#ff59e3]/60 overflow-hidden relative shadow-[0_0_15px_rgba(255,89,227,0.3)]">
@@ -189,8 +187,8 @@ export default function LeaderboardPage() {
                     </div>
                     <p className="text-white font-semibold text-base mt-1 text-center truncate w-24">{podium[2].name}</p>
                     <p className="text-[#ff59e3] text-2xl font-bold">{podium[2].pts.toLocaleString()}</p>
-                    <p className="text-muted-foreground text-xs font-bold tracking-widest">PTS</p>
-                    <div className="w-24 h-20 bg-gradient-to-t from-transparent to-[#ff59e3]/20 rounded-t-xl mt-3 border-t-[3px] border-[#ff59e3]/50" />
+                    <p className="text-muted-foreground text-xs font-bold tracking-widest uppercase">pts</p>
+                    <div className="hidden md:block w-24 h-20 bg-gradient-to-t from-transparent to-[#ff59e3]/20 rounded-t-xl mt-3 border-t-[3px] border-[#ff59e3]/50" />
                   </div>
                 )}
               </div>
@@ -202,16 +200,16 @@ export default function LeaderboardPage() {
                 {runnersUp.map((m) => (
                   <div key={m.rank} className="flex items-center gap-4 py-2.5 border-b border-border/50 last:border-0 transition-all">
                     <span className="text-muted-foreground text-base font-bold w-6">{m.rank}</span>
-                    <div className="w-10 h-10 rounded-full overflow-hidden relative border border-border">
+                    <div className="w-10 h-10 rounded-full overflow-hidden relative border border-border shrink-0">
                       <Image src={m.avatar} alt="" fill className="object-cover" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-white font-bold text-base tracking-tight">{m.name}</p>
-                      {m.rank > 5 && <p className="text-muted-foreground text-[11px] font-medium tracking-wide italic">{m.status}</p>}
+                      <p className="text-white font-bold text-base tracking-tight truncate">{m.name}</p>
+                      {m.rank > 5 && <p className="text-muted-foreground text-[11px] font-medium tracking-wide italic truncate">{m.status}</p>}
                     </div>
-                    <div className="text-right">
-                      <p className="text-[#99f7ff] font-black text-xl">{m.pts.toLocaleString()}</p>
-                      <p className="text-muted-foreground text-[10px] font-bold">PTS</p>
+                    <div className="text-right shrink-0">
+                      <p className="text-[#99f7ff] font-black text-xl leading-none">{m.pts.toLocaleString()}</p>
+                      <p className="text-muted-foreground text-[10px] font-bold uppercase mt-1">pts</p>
                     </div>
                   </div>
                 ))}
@@ -220,13 +218,13 @@ export default function LeaderboardPage() {
           </div>
 
           {/* Right column – Chore Mastery */}
-          <div className="col-span-2 min-h-0 overflow-hidden">
+          <div className="lg:col-span-2 min-h-0 overflow-hidden">
             <div className="bg-card rounded-xl border border-border p-5 h-full flex flex-col">
               <div className="flex items-center gap-2 mb-4 shrink-0">
                 <BarChart2 className="w-4 h-4 text-[#99f7ff]" />
                 <h2 className="text-sm font-bold text-white tracking-widest uppercase">Chore Mastery</h2>
               </div>
-              <div className="flex flex-col gap-3 flex-1 min-h-0 overflow-y-auto pr-2 custom-scrollbar">
+              <div className="flex flex-col gap-3 flex-1 min-h-0 lg:overflow-y-auto lg:pr-2 custom-scrollbar">
                 {choreMastery.map((c, i) => (
                   <div key={i} className="bg-background/50 rounded-xl p-4 border border-border shrink-0 flex flex-col justify-between">
                     <div className="flex items-center justify-between mb-3">
@@ -248,7 +246,7 @@ export default function LeaderboardPage() {
                         </div>
                         <div className="text-right">
                           <p className="text-lg font-black text-white leading-none">{c.topCount}</p>
-                          <p className="text-[8px] text-muted-foreground font-bold">DONE</p>
+                          <p className="text-[8px] text-muted-foreground font-bold uppercase">done</p>
                         </div>
                       </div>
 
@@ -263,7 +261,7 @@ export default function LeaderboardPage() {
                         </div>
                         <div className="text-right">
                           <p className="text-lg font-black text-muted-foreground leading-none">{c.bottomCount}</p>
-                          <p className="text-[8px] text-muted-foreground font-bold">DONE</p>
+                          <p className="text-[8px] text-muted-foreground font-bold uppercase">done</p>
                         </div>
                       </div>
                     </div>

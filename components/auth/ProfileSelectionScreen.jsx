@@ -25,9 +25,10 @@ export default function ProfileSelectionScreen({ onSelect, onBack }) {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      justifyContent: 'center',
+      padding: '80px 24px 60px',
       position: 'relative',
-      overflow: 'hidden',
+      overflowX: 'hidden',
+      overflowY: 'auto',
     }}>
       {/* Ambient Glows */}
       <div style={{position:'absolute',inset:0,pointerEvents:'none',display:'flex',alignItems:'center',justifyContent:'center'}}>
@@ -36,7 +37,7 @@ export default function ProfileSelectionScreen({ onSelect, onBack }) {
       </div>
 
       {/* Back Button */}
-      <div style={{position:'absolute',top:'32px',left:'32px',zIndex:20}}>
+      <div style={{position:'absolute',top:'24px',left:'24px',zIndex:20}}>
         <button type="button" onClick={onBack} style={{display:'flex',alignItems:'center',gap:'8px',color:'#adaaaa',background:'none',border:'none',cursor:'pointer',transition:'color 0.3s'}} onMouseEnter={(e)=>e.currentTarget.style.color='#99f7ff'} onMouseLeave={(e)=>e.currentTarget.style.color='#adaaaa'}>
           <Icon name="arrow_back" size={20} />
           <span style={{fontFamily:'"Space Grotesk",sans-serif',fontSize:'14px',textTransform:'uppercase',letterSpacing:'0.1em'}}>Back</span>
@@ -44,10 +45,10 @@ export default function ProfileSelectionScreen({ onSelect, onBack }) {
       </div>
 
       {/* Header */}
-      <div style={{textAlign:'center',marginBottom:'64px',zIndex:10,position:'relative'}}>
+      <div style={{textAlign:'center',marginBottom:'48px',zIndex:10,position:'relative'}}>
         <h1 style={{
           fontFamily:'"Space Grotesk",sans-serif',
-          fontSize:'clamp(32px,5vw,60px)',
+          fontSize:'clamp(28px,6vw,60px)',
           fontWeight:700,
           letterSpacing:'-0.02em',
           textTransform:'uppercase',
@@ -55,14 +56,15 @@ export default function ProfileSelectionScreen({ onSelect, onBack }) {
           WebkitBackgroundClip:'text',
           WebkitTextFillColor:'transparent',
           filter:'drop-shadow(0 0 20px rgba(0,241,254,0.4))',
+          lineHeight: 1.1
         }}>
           Who is entering the grid?
         </h1>
         <p style={{
           fontFamily:'"Space Grotesk",sans-serif',
           color:'#00f1fe',
-          fontSize:'clamp(14px,1.2vw,18px)',
-          marginTop:'16px',
+          fontSize:'clamp(12px,1.5vw,18px)',
+          marginTop:'12px',
           letterSpacing:'0.2em',
           textTransform:'uppercase',
           filter:'drop-shadow(0 0 10px rgba(0,241,254,0.3))',
@@ -72,7 +74,7 @@ export default function ProfileSelectionScreen({ onSelect, onBack }) {
       </div>
 
       {/* Avatar Cards */}
-      <div style={{display:'flex',flexWrap:'wrap',gap:'32px',justifyContent:'center',alignItems:'center',zIndex:10,width:'100%',maxWidth:'1280px',padding:'0 32px'}}>
+      <div style={{display:'flex',flexWrap:'wrap',gap:'24px',justifyContent:'center',alignItems:'stretch',zIndex:10,width:'100%',maxWidth:'1280px',padding:'0'}}>
         {OPERATIVES.map((baseOp) => {
           const safeOverrides = profileOverrides || {};
           const overrides = safeOverrides[baseOp.profileId] || {};
@@ -88,21 +90,24 @@ export default function ProfileSelectionScreen({ onSelect, onBack }) {
               onMouseLeave={() => setHoveredId(null)}
               style={{
                 borderRadius:'16px',
-                padding:'24px',
-                width:'192px',
+                padding:'20px',
+                width:'clamp(140px, 40vw, 192px)',
                 display:'flex',
                 flexDirection:'column',
                 alignItems:'center',
                 cursor:'pointer',
                 position:'relative',
+                background: 'rgba(255,255,255,0.02)',
+                border: `1px solid ${isHovered ? palette.borderHover : 'transparent'}`,
+                transition: 'all 0.3s'
               }}
             >
               {/* Avatar Circle */}
               <div style={{
-                width:'128px',
-                height:'128px',
+                width:'clamp(80px, 20vw, 128px)',
+                height:'clamp(80px, 20vw, 128px)',
                 borderRadius:'50%',
-                marginBottom:'24px',
+                marginBottom:'16px',
                 overflow:'hidden',
                 border:`2px solid ${isHovered ? palette.borderHover : palette.border}`,
                 position:'relative',
@@ -128,7 +133,7 @@ export default function ProfileSelectionScreen({ onSelect, onBack }) {
               {/* Name */}
               <h2 style={{
                 fontFamily:'"Space Grotesk",sans-serif',
-                fontSize:'24px',
+                fontSize:'clamp(18px, 4vw, 24px)',
                 fontWeight:700,
                 color: isHovered ? palette.text : '#ffffff',
                 letterSpacing:'0.05em',
@@ -142,11 +147,11 @@ export default function ProfileSelectionScreen({ onSelect, onBack }) {
               {/* Codename Tag */}
               <span style={{
                 fontFamily:'"Space Grotesk",sans-serif',
-                fontSize:'12px',
+                fontSize:'clamp(10px, 2vw, 12px)',
                 color: palette.tag,
                 letterSpacing:'0.15em',
                 textTransform:'uppercase',
-                padding:'4px 12px',
+                padding:'4px 10px',
                 background:'rgba(0,0,0,0.8)',
                 borderRadius:'9999px',
                 border:`1px solid ${palette.border}`,
@@ -162,18 +167,20 @@ export default function ProfileSelectionScreen({ onSelect, onBack }) {
       </div>
 
       {/* Motivational Quote */}
-      <div style={{marginTop:'80px',zIndex:10, padding: '0 24px'}}>
+      <div style={{marginTop:'48px',zIndex:10, padding: '0 24px'}}>
         <p style={{
           fontFamily:'"Space Grotesk",sans-serif',
-          fontSize:'clamp(14px,1.5vw,20px)',
+          fontSize:'clamp(12px,1.8vw,20px)',
           fontWeight:600,
           textTransform:'uppercase',
-          letterSpacing:'0.2em',
+          letterSpacing:'0.15em',
           color:'#ffffff',
           filter:'drop-shadow(0 0 10px rgba(0,0,0,0.9)) drop-shadow(0 0 20px rgba(0,0,0,0.6))',
           textAlign:'center',
           maxWidth:'800px',
-          opacity: 0.8
+          opacity: 0.8,
+          lineHeight: 1.5,
+          whiteSpace: 'nowrap'
         }}>
           "IF YOU DON'T TAKE RISKS, <span style={{color:'#00f1fe', textShadow:'0 0 10px rgba(0,241,254,0.5)'}}>YOU CAN'T CREATE A FUTURE.</span>"
         </p>

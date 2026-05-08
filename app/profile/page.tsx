@@ -3,7 +3,7 @@
 import GlassyButton from "@/components/auth/GlassyButton"
 import { Sidebar } from "@/components/dashboard/sidebar"
 import { SyncButton } from "@/components/SyncButton"
-import { Bot, Vote, Pencil, Calendar, Trash2, TrendingUp, Star, Home as HomeIcon, ChevronLeft, ChevronRight, Clock, Users, Lock, BarChart2, X, Droplets, Utensils, Bath, ShieldCheck } from "lucide-react"
+import { Bot, Vote, Pencil, Calendar, Trash2, TrendingUp, Star, Home as HomeIcon, ChevronLeft, ChevronRight, Clock, Users, Lock, BarChart2, X, Droplets, Utensils, Bath, ShieldCheck, Menu } from "lucide-react"
 import { OTPModal } from "@/components/auth/OTPModal"
 import { supabase } from "@/lib/supabase"
 import Image from "next/image"
@@ -14,6 +14,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import toast from "react-hot-toast"
 import { OPERATIVES } from "@/data/operatives"
 import { useChoreStore } from "@/stores/useChoreStore"
+import { useUIStore } from "@/stores/useUIStore"
 
 const PEOPLE = ["sanjjay", "sougandh", "chris", "haady", "kichu"]
 
@@ -103,6 +104,7 @@ const CHORE_LIST = [
 export default function ProfilePage() {
   const { currentUser: user, logout, updateProfile, profileOverrides = {} } = useAuthStore()
   const { history, rewardPolls, voteOnRewardPoll, toggleChat, refreshPolls } = useChoreStore()
+  const { toggleSidebar } = useUIStore()
   const router = useRouter()
   
   const [selectedLog, setSelectedLog] = useState<{ pid: string, cid: string } | null>(null)
@@ -143,8 +145,6 @@ export default function ProfilePage() {
   }, []);
   
   const pid = user?.profileId || ""
-
-
 
   const baseProfile = OPERATIVES.find(op => op.profileId === user?.profileId) || OPERATIVES[0]
   const safeOverrides = profileOverrides || {}
@@ -248,13 +248,10 @@ export default function ProfilePage() {
   }
 
   const handleResetPasscode = async () => {
-    console.log("RESET BUTTON CLICKED");
     if (!newPasscode || newPasscode.length !== 4) { toast.error("Passcode must be exactly 4 digits."); return; }
     if (newPasscode !== confirmPasscode) { toast.error("Passcodes do not match."); return; }
     
-    // Recalculate email to ensure it's fresh
     const freshEmail = userOverride.email || user?.email || "";
-    console.log("Fresh Email detected:", freshEmail);
 
     if (!freshEmail) {
       toast.error("Please add an email to your profile first to receive OTP.");
@@ -263,7 +260,6 @@ export default function ProfilePage() {
 
     setIsSubmitting(true)
     try {
-      console.log("Initiating signInWithOtp for:", freshEmail);
       const { error } = await supabase.auth.signInWithOtp({ 
         email: freshEmail,
         options: {
@@ -281,7 +277,7 @@ export default function ProfilePage() {
       
       setOtpEmail(freshEmail)
       setIsOTPModalOpen(true)
-      setIsResetModalOpen(false) // Close the passcode entry modal to show OTP box clearly
+      setIsResetModalOpen(false)
       toast.success("OTP sent to your email!")
     } catch (err: any) {
       console.error("OTP Error:", err)
@@ -301,7 +297,6 @@ export default function ProfilePage() {
       
       if (error) throw error
 
-      // OTP verified, now save the passcode
       const res = await fetch('/api/passcodes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -312,7 +307,7 @@ export default function ProfilePage() {
         toast.success("Passcode updated! Please login again.")
         setIsResetSuccess(true)
         setIsOTPModalOpen(false)
-        setIsResetModalOpen(true) // Re-open the modal to show the success/countdown UI
+        setIsResetModalOpen(true)
       } else {
         const data = await res.json()
         toast.error(data.error || "Failed to update passcode.")
@@ -325,16 +320,22 @@ export default function ProfilePage() {
   const weekDays = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
   
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className="flex min-h-screen bg-background text-foreground">
       <Sidebar activePage="profile" />
 
-      <main className="flex-1 ml-64 flex flex-col overflow-hidden p-6">
-        <div className="flex items-center justify-between mb-4 shrink-0">
+      <main className="flex-1 lg:ml-64 flex flex-col p-4 md:p-6 pb-20 lg:pb-6 overflow-x-hidden">
+        <div className="flex items-center justify-between mb-6 lg:mb-4 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="text-3xl drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">{currentRank.medal}</div>
+            <button 
+              onClick={toggleSidebar}
+              className="p-2 rounded-lg bg-secondary hover:bg-muted transition-colors lg:hidden shrink-0"
+            >
+              <Menu className="w-6 h-6 text-muted-foreground" />
+            </button>
+            <div className="text-2xl md:text-3xl drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">{currentRank.medal}</div>
             <div className="flex flex-col">
-              <span className={`text-xl font-black tracking-widest ${currentRank.color} leading-none mb-1`}>{currentRank.rank} PLACE</span>
-              <span className="text-muted-foreground text-[10px] font-bold tracking-widest leading-none">HOUSE RANKINGS</span>
+              <span className={`text-sm md:text-xl font-black tracking-widest ${currentRank.color} leading-none mb-1 uppercase`}>{currentRank.rank} PLACE</span>
+              <span className="text-muted-foreground text-[8px] md:text-[10px] font-bold tracking-widest leading-none uppercase">HOUSE RANKINGS</span>
             </div>
           </div>
           <div className="flex gap-2">
@@ -345,131 +346,131 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-5 flex-1 min-h-0">
-          <div className="bg-card rounded-xl border border-[#99f7ff]/25 p-5 relative overflow-hidden flex flex-col">
-            <div className="absolute inset-0 opacity-15">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 flex-1">
+          {/* PROFILE CARD */}
+          <div className="bg-card rounded-xl border border-[#99f7ff]/25 p-4 md:p-5 relative overflow-hidden flex flex-col">
+            <div className="absolute inset-0 opacity-10 md:opacity-15">
               <Image src={avatarSrc} alt="Background" fill className="object-cover blur-sm" style={baseProfile.imgStyle} />
             </div>
-            <div className="relative flex flex-col flex-1 min-h-0">
-              <div className="relative flex items-center justify-between gap-6 mb-6 shrink-0 border-b border-white/10 pb-6">
-                <div className="flex items-center gap-5">
-                  <div className="w-24 h-24 rounded-full border-4 border-[#99f7ff] overflow-hidden relative shadow-[0_0_15px_rgba(153,247,255,0.3)]">
+            <div className="relative flex flex-col flex-1">
+              <div className="relative flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6 mb-6 shrink-0 border-b border-white/10 pb-6">
+                <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-5 text-center sm:text-left">
+                  <div className="w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-[#99f7ff] overflow-hidden relative shadow-[0_0_15px_rgba(153,247,255,0.3)]">
                     <Image src={avatarSrc} alt="Profile avatar" fill className="object-cover" style={baseProfile.imgStyle} />
                   </div>
                   <div className="flex flex-col">
-                    <h2 className="text-2xl font-black text-white uppercase tracking-wide">{name}</h2>
+                    <h2 className="text-xl md:text-2xl font-black text-white uppercase tracking-wide">{name}</h2>
                     <div className="flex flex-col gap-0.5">
                       <p className="text-[#ff59e3] text-[10px] font-bold tracking-[0.2em] uppercase">{codename}</p>
                       {email && <p className="text-muted-foreground text-[10px] font-medium tracking-wider">{email}</p>}
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-col items-end gap-2 shrink-0 relative right-[15px]">
-                  <div className="flex flex-col gap-2.5">
-                    <div className="w-[165px] h-[35px]">
-                      <GlassyButton label="EDIT PROFILE" icon={<Pencil className="w-3 h-3" />} background="#99f7ff" hoverBackground="#7ae8f0" textColor="#000" fontSize="11.5px" borderRadius={8} onClick={() => {
-                        let pc = "+91"; let p = phone; for (const c of COUNTRY_CODES) { if (phone.startsWith(c.code)) { pc = c.code; p = phone.slice(c.code.length).trim(); break; } }
-                        setEditName(name); setEditCodename(codename); setEditCountryCode(pc); setEditPhone(p); setEditEmail(email); setIsEditProfileModalOpen(true);
-                      }} />
-                    </div>
-                    <div className="w-[165px] h-[35px]">
-                      <GlassyButton label="RESET PASSCODE" icon={<Lock className="w-3 h-3" />} background="rgba(0,0,0,0.4)" hoverBackground="rgba(255,255,255,0.1)" textColor="#fff" fontSize="11.5px" borderRadius={8} onClick={() => { setIsResetModalOpen(true); setIsResetSuccess(false); setNewPasscode(""); setConfirmPasscode(""); }} />
-                    </div>
+                <div className="flex flex-col items-center sm:items-end gap-2.5 w-full sm:w-auto">
+                  <div className="w-full sm:w-[165px] h-[35px]">
+                    <GlassyButton label="EDIT PROFILE" icon={<Pencil className="w-3 h-3" />} background="#99f7ff" hoverBackground="#7ae8f0" textColor="#000" fontSize="11.5px" borderRadius={8} onClick={() => {
+                      let pc = "+91"; let p = phone; for (const c of COUNTRY_CODES) { if (phone.startsWith(c.code)) { pc = c.code; p = phone.slice(c.code.length).trim(); break; } }
+                      setEditName(name); setEditCodename(codename); setEditCountryCode(pc); setEditPhone(p); setEditEmail(email); setIsEditProfileModalOpen(true);
+                    }} />
+                  </div>
+                  <div className="w-full sm:w-[165px] h-[35px]">
+                    <GlassyButton label="RESET PASSCODE" icon={<Lock className="w-3 h-3" />} background="rgba(0,0,0,0.4)" hoverBackground="rgba(255,255,255,0.1)" textColor="#fff" fontSize="11.5px" borderRadius={8} onClick={() => { setIsResetModalOpen(true); setIsResetSuccess(false); setNewPasscode(""); setConfirmPasscode(""); }} />
                   </div>
                 </div>
               </div>
               
-              <div className="flex flex-col gap-4 flex-1 min-h-0">
-                <div className="flex gap-4 flex-[2.5] min-h-0">
-                  <div className="flex-1 flex flex-col bg-black/40 rounded-xl p-4 border border-white/5 overflow-hidden">
-                    <span className="text-sm text-white font-black tracking-widest uppercase mb-3 shrink-0">Chores Distribution</span>
-                    <div className="flex flex-col gap-2 flex-1 overflow-y-hidden pr-1">
+              <div className="flex flex-col gap-6 flex-1">
+                <div className="flex flex-col md:flex-row gap-4 flex-1">
+                  <div className="flex-1 flex flex-col bg-black/40 rounded-xl p-4 border border-white/5">
+                    <span className="text-xs md:text-sm text-white font-black tracking-widest uppercase mb-4">Chores Distribution</span>
+                    <div className="flex flex-col gap-3 flex-1">
                       {CHORE_LIST.map(chore => (
                         <div key={chore.id} className="shrink-0">
-                          <div className="flex justify-between text-[11px] font-black mb-1.5 tracking-wider">
+                          <div className="flex justify-between text-[10px] md:text-[11px] font-black mb-1.5 tracking-wider">
                             <span className="text-white/90 uppercase">{chore.label}</span>
                             <span className={chore.color}>{stats[chore.id as keyof typeof stats]}</span>
                           </div>
-                          <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                          <div className="h-1 bg-white/5 rounded-full overflow-hidden">
                             <div className="h-full transition-all duration-500" style={{ backgroundColor: chore.color.replace('text-[', '').replace(']', ''), width: `${totalLifetimeChores > 0 ? (stats[chore.id as keyof typeof stats] / totalLifetimeChores) * 100 : 0}%` }} />
                           </div>
                         </div>
                       ))}
                     </div>
                   </div>
-                  <div className="flex-1 bg-black/40 rounded-xl p-4 border border-white/5 flex flex-col items-center justify-start relative">
-                    <span className="text-sm text-white font-black tracking-widest uppercase mb-4 self-start">Skill Distribution</span>
+                  <div className="flex-1 bg-black/40 rounded-xl p-4 border border-white/5 flex flex-col items-center justify-start relative min-h-[220px]">
+                    <span className="text-xs md:text-sm text-white font-black tracking-widest uppercase mb-4 self-start">Skill Distribution</span>
                     <div className="flex-1 flex items-center justify-center w-full"><SkillDistribution stats={stats} /></div>
                   </div>
                 </div>
-                <div className="bg-background/40 rounded-xl border border-[#99f7ff]/20 p-3 flex flex-col shrink-0">
-                  <div className="flex items-center gap-1.5 mb-3 shrink-0">
-                    <BarChart2 className="w-4 h-4 text-[#99f7ff]" /><h2 className="text-sm font-black text-white tracking-widest uppercase">Personal Stats</h2>
+
+                <div className="bg-background/40 rounded-xl border border-[#99f7ff]/20 p-3 md:p-4 flex flex-col mt-auto">
+                  <div className="flex items-center gap-1.5 mb-3">
+                    <BarChart2 className="w-4 h-4 text-[#99f7ff]" />
+                    <h2 className="text-xs md:text-sm font-black text-white tracking-widest uppercase">Personal Stats</h2>
                   </div>
-                  <div className="grid grid-cols-5 gap-1.5 mb-3 shrink-0">
+                  <div className="grid grid-cols-5 gap-1.5 md:gap-2 mb-4">
                     {CHORE_LIST.filter(c => c.id !== "extra").map(c => {
                       const Icon = c.icon; const rank = getRank(c.id, pid);
                       return (
-                        <button key={c.id} onClick={() => setSelectedLog({ pid, cid: c.id })} className="flex flex-col items-center gap-1 bg-background/40 rounded-lg py-1.5 border border-white/5 hover:border-white/20 transition-all group">
+                        <button key={c.id} onClick={() => setSelectedLog({ pid, cid: c.id })} className="flex flex-col items-center gap-1 bg-background/40 rounded-lg py-2 border border-white/5 hover:border-white/20 transition-all group">
                           <Icon className={`w-3.5 h-3.5 ${c.color}`} />
                           <span className="text-[10px] font-black text-white group-hover:text-[#99f7ff] transition-colors">#{rank}</span>
                         </button>
                       )
                     })}
                   </div>
-                  <div className="grid grid-cols-2 gap-2 shrink-0">
-                    <button onClick={() => setSelectedLog({ pid, cid: "extra" })} className="flex items-center justify-center gap-2 py-2 rounded-lg bg-[#99f7ff]/5 border border-[#99f7ff]/10 hover:bg-[#99f7ff]/10 transition-all group">
-                      <TrendingUp className="w-3 h-3 text-[#99f7ff]" />
-                      <span className="text-[10px] font-black text-[#99f7ff] uppercase tracking-wider text-center">EXTRA CHORES: #{getRank("extra", pid)}</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <button onClick={() => setSelectedLog({ pid, cid: "extra" })} className="flex items-center justify-center gap-2 py-2.5 rounded-lg bg-[#99f7ff]/5 border border-[#99f7ff]/10 hover:bg-[#99f7ff]/10 transition-all group">
+                      <TrendingUp className="w-3.5 h-3.5 text-[#99f7ff]" />
+                      <span className="text-[10px] font-black text-[#99f7ff] uppercase tracking-wider">Extra Chores: #{getRank("extra", pid)}</span>
                     </button>
-                    <button onClick={() => setSelectedLog({ pid, cid: "all" })} className="w-full bg-[#ff59e3]/10 hover:bg-[#ff59e3]/20 text-[#ff59e3] border border-[#ff59e3]/30 rounded-lg py-2 text-[10px] font-black tracking-[0.2em] transition-all uppercase">⚡ VIEW LOGS</button>
+                    <button onClick={() => setSelectedLog({ pid, cid: "all" })} className="w-full bg-[#ff59e3]/10 hover:bg-[#ff59e3]/20 text-[#ff59e3] border border-[#ff59e3]/30 rounded-lg py-2.5 text-[10px] font-black tracking-[0.2em] transition-all uppercase">⚡ View Logs</button>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-card rounded-xl border border-border p-5 flex flex-col min-h-0 overflow-hidden">
-            <div className="flex items-center justify-between mb-2 shrink-0">
+          {/* ACTIVITY MATRIX */}
+          <div className="bg-card rounded-xl border border-border p-4 md:p-5 flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between mb-4 md:mb-2 shrink-0">
               <div className="flex items-center gap-2 flex-1">
                 <Calendar className="w-5 h-5 text-[#ff59e3]" />
                 <h2 className="text-base font-bold text-white uppercase tracking-tight">Activity Matrix</h2>
               </div>
               <div className="flex items-center gap-1 bg-background/50 rounded-lg px-2 py-1 border border-border">
                 <button onClick={handlePrevMonth} className="text-muted-foreground hover:text-white transition-colors"><ChevronLeft className="w-4 h-4" /></button>
-                <span className="text-[10px] tracking-widest text-[#99f7ff] w-[100px] text-center font-bold uppercase">{monthName}</span>
+                <span className="text-[10px] tracking-widest text-[#99f7ff] w-[80px] md:w-[100px] text-center font-bold uppercase">{monthName}</span>
                 <button onClick={handleNextMonth} className="text-muted-foreground hover:text-white transition-colors"><ChevronRight className="w-4 h-4" /></button>
               </div>
             </div>
-
-
             
-            <div className="grid grid-cols-7 gap-2 mt-4 flex-1 content-start overflow-y-auto custom-scrollbar pr-1">
-              {weekDays.map(d => <div key={d} className="text-center text-[10px] text-muted-foreground font-bold">{d}</div>)}
+            <div className="grid grid-cols-7 gap-1 md:gap-2 mt-4 flex-1 content-start pr-1 overflow-y-auto custom-scrollbar">
+              {weekDays.map(d => <div key={d} className="text-center text-[8px] md:text-[10px] text-muted-foreground font-bold">{d}</div>)}
               {[...Array(firstDay)].map((_, i) => <div key={`empty-${i}`} />)}
               {[...Array(daysInMonth)].map((_, i) => {
                 const d = i + 1; const act = dailyActivities[d]; const has = act && act.count > 0;
                 return (
-                  <button key={d} onClick={() => setSelectedDay(selectedDay === d ? null : d)} className={`rounded-xl border flex flex-col items-center justify-center relative aspect-square transition-all hover:border-[#99f7ff]/50 ${has ? "border-[#99f7ff]/25 bg-[#99f7ff]/5 shadow-[inset_0_0_20px_rgba(153,247,255,0.05)] cursor-pointer" : "border-white/5 bg-white/2"}`}>
-                    <span className="text-[10px] absolute top-1.5 left-2 text-muted-foreground/60 font-bold">{d}</span>
-                    {has && (act.count === 1 ? (() => { const Icon = CHORE_LIST.find(c => c.id === act.chores[0])?.icon || Trash2; return <Icon className="w-5 h-5 text-[#99f7ff] drop-shadow-[0_0_10px_rgba(153,247,255,0.3)]" />; })() : <span className="text-[#99f7ff] font-bold text-sm">+{act.count}</span>)}
+                  <button key={d} onClick={() => setSelectedDay(selectedDay === d ? null : d)} className={`rounded-lg md:rounded-xl border flex flex-col items-center justify-center relative aspect-square transition-all hover:border-[#99f7ff]/50 ${has ? "border-[#99f7ff]/25 bg-[#99f7ff]/5 shadow-[inset_0_0_20px_rgba(153,247,255,0.05)] cursor-pointer" : "border-white/5 bg-white/2"}`}>
+                    <span className="text-[8px] md:text-[10px] absolute top-1 md:top-1.5 left-1 md:left-2 text-muted-foreground/60 font-bold">{d}</span>
+                    {has && (act.count === 1 ? (() => { const Icon = CHORE_LIST.find(c => c.id === act.chores[0])?.icon || Trash2; return <Icon className="w-4 h-4 md:w-5 md:h-5 text-[#99f7ff] drop-shadow-[0_0_10px_rgba(153,247,255,0.3)]" />; })() : <span className="text-[#99f7ff] font-bold text-xs md:text-sm">+{act.count}</span>)}
                   </button>
                 )
               })}
             </div>
 
             {selectedDay && dailyActivities[selectedDay] && (
-              <div className="mt-4 p-3 bg-background/50 rounded-lg border border-[#99f7ff]/20 shrink-0">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-bold text-[#99f7ff] uppercase tracking-wider">{monthName.split(' ')[0]} {selectedDay} Activities</span>
+              <div className="mt-6 p-4 bg-background/50 rounded-xl border border-[#99f7ff]/20">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs md:text-sm font-bold text-[#99f7ff] uppercase tracking-wider">{monthName.split(' ')[0]} {selectedDay} Activities</span>
                   <button onClick={() => setSelectedDay(null)} className="text-muted-foreground hover:text-white transition-colors"><X className="w-4 h-4" /></button>
                 </div>
                 <div className="flex gap-2 flex-wrap">
                   {dailyActivities[selectedDay].chores.map((cid: any, i: number) => {
                     const chore = CHORE_LIST.find(c => c.id === cid); if (!chore) return null; const Icon = chore.icon;
                     return (
-                      <div key={i} className="flex items-center gap-1 bg-[#99f7ff]/10 rounded px-2 py-1 border border-[#99f7ff]/20">
-                        <Icon className="w-4 h-4 text-[#99f7ff]" /><span className="text-xs font-bold text-[#99f7ff] uppercase">{chore.label}</span>
+                      <div key={i} className="flex items-center gap-1.5 bg-[#99f7ff]/10 rounded-lg px-3 py-1.5 border border-[#99f7ff]/20">
+                        <Icon className="w-3.5 h-3.5 text-[#99f7ff]" /><span className="text-[10px] font-bold text-[#99f7ff] uppercase">{chore.label}</span>
                       </div>
                     );
                   })}
@@ -480,23 +481,22 @@ export default function ProfilePage() {
         </div>
       </main>
 
-
-
+      {/* MODALS */}
       {isResetModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-          <div className="bg-[#131313] border border-[#00f1fe] shadow-[0_0_30px_rgba(0,241,254,0.3)] rounded-xl p-8 max-w-sm w-full flex flex-col gap-6">
-            <h2 className="text-xl font-bold text-[#00f1fe] tracking-widest text-center uppercase">{isResetSuccess ? "ACCESS KEY UPDATED" : "RESET PASSCODE"}</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="bg-[#131313] border border-[#00f1fe] shadow-[0_0_30px_rgba(0,241,254,0.3)] rounded-2xl p-6 md:p-8 max-w-sm w-full flex flex-col gap-6 my-auto">
+            <h2 className="text-lg md:text-xl font-bold text-[#00f1fe] tracking-widest text-center uppercase">{isResetSuccess ? "Access Key Updated" : "Reset Passcode"}</h2>
             
             {isResetSuccess ? (
-              <div className="flex flex-col items-center gap-6 py-4 text-center">
-                <div className="w-20 h-20 rounded-full bg-cyan-500/20 border border-cyan-500/50 flex items-center justify-center animate-pulse">
-                  <ShieldCheck className="w-10 h-10 text-cyan-500" />
+              <div className="flex flex-col items-center gap-6 py-2 md:py-4 text-center">
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-cyan-500/20 border border-cyan-500/50 flex items-center justify-center animate-pulse">
+                  <ShieldCheck className="w-8 h-8 md:w-10 md:h-10 text-cyan-500" />
                 </div>
                 <div>
                   <p className="text-white text-sm font-bold mb-1">Login with your new passcode.</p>
-                  <p className="text-muted-foreground text-xs mb-6">Mainframe synchronized successfully.</p>
-                  <div className="bg-black/40 border border-cyan-500/20 rounded-lg py-2 px-6 inline-block">
-                    <p className="text-cyan-400 font-bold text-sm tracking-widest uppercase animate-pulse">LOGGING OUT IN {countdown}S</p>
+                  <p className="text-muted-foreground text-[10px] md:text-xs mb-6">Mainframe synchronized successfully.</p>
+                  <div className="bg-black/40 border border-cyan-500/20 rounded-lg py-2 px-4 md:px-6 inline-block">
+                    <p className="text-cyan-400 font-bold text-[10px] md:text-sm tracking-widest uppercase animate-pulse">Logging out in {countdown}s</p>
                   </div>
                 </div>
               </div>
@@ -504,7 +504,7 @@ export default function ProfilePage() {
               <>
                 <div className="flex flex-col gap-4">
                   <div>
-                    <label className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase ml-1 block mb-1">New 4-Digit Passcode</label>
+                    <label className="text-[9px] md:text-[10px] font-bold text-muted-foreground tracking-widest uppercase ml-1 block mb-1">New 4-Digit Passcode</label>
                     <input 
                       type="password" 
                       maxLength={4} 
@@ -515,7 +515,7 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase ml-1 block mb-1">Confirm Passcode</label>
+                    <label className="text-[9px] md:text-[10px] font-bold text-muted-foreground tracking-widest uppercase ml-1 block mb-1">Confirm Passcode</label>
                     <input 
                       ref={confirmInputRef} 
                       type="password" 
@@ -528,8 +528,8 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 <div className="flex gap-3 mt-2">
-                  <button onClick={() => { setIsResetModalOpen(false); setNewPasscode(""); setConfirmPasscode(""); }} className="flex-1 py-3 rounded-xl border border-white/10 text-muted-foreground hover:text-white transition-all uppercase tracking-widest text-xs font-bold">Cancel</button>
-                  <button ref={saveButtonRef} onClick={handleResetPasscode} disabled={isSubmitting} className="flex-1 py-3 rounded-xl bg-[#00f1fe] text-[#005f64] hover:brightness-110 transition-all uppercase tracking-widest text-xs font-black disabled:opacity-50">{isSubmitting ? "SENDING OTP..." : "VERIFY & SAVE"}</button>
+                  <button onClick={() => { setIsResetModalOpen(false); setNewPasscode(""); setConfirmPasscode(""); }} className="flex-1 py-3 rounded-xl border border-white/10 text-muted-foreground hover:text-white transition-all uppercase tracking-widest text-[10px] md:text-xs font-bold">Cancel</button>
+                  <button ref={saveButtonRef} onClick={handleResetPasscode} disabled={isSubmitting} className="flex-1 py-3 rounded-xl bg-[#00f1fe] text-[#005f64] hover:brightness-110 transition-all uppercase tracking-widest text-[10px] md:text-xs font-black disabled:opacity-50">{isSubmitting ? "Sending..." : "Verify & Save"}</button>
                 </div>
               </>
             )}
@@ -538,84 +538,79 @@ export default function ProfilePage() {
       )}
 
       {isEditProfileModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-          <div className="bg-[#131313] border border-[#99f7ff] shadow-[0_0_30px_rgba(153,247,255,0.3)] rounded-xl p-8 max-w-md w-full flex flex-col gap-6">
-            <h2 className="text-xl font-bold text-[#99f7ff] tracking-widest text-center">EDIT PROFILE</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="bg-[#131313] border border-[#99f7ff] shadow-[0_0_30px_rgba(153,247,255,0.3)] rounded-2xl p-6 md:p-8 max-w-md w-full flex flex-col gap-6 my-auto">
+            <h2 className="text-lg md:text-xl font-bold text-[#99f7ff] tracking-widest text-center uppercase">Edit Profile</h2>
             <div className="flex flex-col gap-4">
               <div>
-                <label className="text-xs text-muted-foreground uppercase tracking-widest mb-1 block">Display Name</label>
-                <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} className="w-full bg-black/50 border border-border rounded-lg p-3 text-white focus:border-[#99f7ff] focus:outline-none" />
+                <label className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1 block">Display Name</label>
+                <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} className="w-full bg-black/50 border border-border rounded-xl p-3 text-white focus:border-[#99f7ff] focus:outline-none text-sm" />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground uppercase tracking-widest mb-1 block">Nickname (Codename)</label>
-                <input type="text" value={editCodename} onChange={(e) => setEditCodename(e.target.value)} className="w-full bg-black/50 border border-border rounded-lg p-3 text-white focus:border-[#99f7ff] focus:outline-none" />
+                <label className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1 block">Nickname (Codename)</label>
+                <input type="text" value={editCodename} onChange={(e) => setEditCodename(e.target.value)} className="w-full bg-black/50 border border-border rounded-xl p-3 text-white focus:border-[#99f7ff] focus:outline-none text-sm" />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground uppercase tracking-widest mb-1 block">Email Address</label>
-                <input type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} className="w-full bg-black/50 border border-border rounded-lg p-3 text-white focus:border-[#99f7ff] focus:outline-none" />
+                <label className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1 block">Email Address</label>
+                <input type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} className="w-full bg-black/50 border border-border rounded-xl p-3 text-white focus:border-[#99f7ff] focus:outline-none text-sm" />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground uppercase tracking-widest mb-1 block">Phone Number</label>
+                <label className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1 block">Phone Number</label>
                 <div className="flex gap-2">
-                  <select value={editCountryCode} onChange={(e) => setEditCountryCode(e.target.value)} className="w-[110px] bg-black/50 border border-border rounded-lg p-3 text-white text-xs">
+                  <select value={editCountryCode} onChange={(e) => setEditCountryCode(e.target.value)} className="w-[90px] md:w-[110px] bg-black/50 border border-border rounded-xl px-2 py-3 text-white text-[10px]">
                     {COUNTRY_CODES.map(c => <option key={c.code} value={c.code}>{c.label}</option>)}
                   </select>
-                  <input type="tel" value={editPhone} onChange={(e) => setEditPhone(e.target.value.replace(/\D/g, "").slice(0, 10))} className="flex-1 bg-black/50 border border-border rounded-lg p-3 text-white" />
+                  <input type="tel" value={editPhone} onChange={(e) => setEditPhone(e.target.value.replace(/\D/g, "").slice(0, 10))} className="flex-1 bg-black/50 border border-border rounded-xl p-3 text-white text-sm" />
                 </div>
-                {editPhone.length > 0 && editPhone.length < 10 && (
-                  <p className="text-[10px] text-red-400 font-bold mt-1 ml-1 uppercase animate-pulse">Number must be 10 digits</p>
-                )}
               </div>
             </div>
             <div className="flex gap-3 mt-2">
-              <button onClick={() => setIsEditProfileModalOpen(false)} className="flex-1 py-3 rounded-lg border border-border text-muted-foreground hover:text-white transition-colors uppercase tracking-widest text-xs font-bold">Cancel</button>
-              <button onClick={handleSaveProfile} className="flex-1 py-3 rounded-lg bg-[#99f7ff] text-black hover:bg-[#99f7ff]/90 transition-colors uppercase tracking-widest text-xs font-bold">Save</button>
+              <button onClick={() => setIsEditProfileModalOpen(false)} className="flex-1 py-3 rounded-xl border border-border text-muted-foreground hover:text-white transition-colors uppercase tracking-widest text-[10px] md:text-xs font-bold">Cancel</button>
+              <button onClick={handleSaveProfile} className="flex-1 py-3 rounded-xl bg-[#99f7ff] text-black hover:bg-[#99f7ff]/90 transition-colors uppercase tracking-widest text-[10px] md:text-xs font-black">Save</button>
             </div>
           </div>
         </div>
       )}
 
       {selectedLog && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-md p-6">
-          <div className="bg-[#131313] border border-[#99f7ff]/30 shadow-[0_0_50px_rgba(153,247,255,0.15)] rounded-2xl w-full max-w-md flex flex-col overflow-hidden max-h-[80vh]">
-            <div className="p-6 border-b border-white/10 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-full border-2 border-[#99f7ff] overflow-hidden relative shadow-[0_0_15px_rgba(153,247,255,0.2)]">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+          <div className="bg-[#131313] border border-[#99f7ff]/30 shadow-[0_0_50px_rgba(153,247,255,0.15)] rounded-2xl w-full max-w-md flex flex-col overflow-hidden max-h-[85vh]">
+            <div className="p-5 md:p-6 border-b border-white/10 flex items-center justify-between">
+              <div className="flex items-center gap-3 md:gap-4">
+                <div className="w-12 h-12 md:w-14 md:h-14 rounded-full border-2 border-[#99f7ff] overflow-hidden relative">
                   <Image src={avatarSrc} alt="" fill className="object-cover" style={baseProfile.imgStyle} />
                 </div>
                 <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-xl font-black text-white uppercase tracking-tight">{selectedLog.cid === "all" ? "ALL CHORES" : CHORE_LIST.find(c => c.id === selectedLog.cid)?.label} LOGS</h2>
-                  </div>
-                  <p className="text-xs text-muted-foreground font-bold tracking-widest uppercase mt-0.5">{name} • CODENAME: {codename}</p>
+                  <h2 className="text-lg md:text-xl font-black text-white uppercase tracking-tight">{selectedLog.cid === "all" ? "All Chores" : CHORE_LIST.find(c => c.id === selectedLog.cid)?.label} Logs</h2>
+                  <p className="text-[9px] md:text-[10px] text-muted-foreground font-bold tracking-widest uppercase mt-0.5">{name} • {codename}</p>
                 </div>
               </div>
-              <button onClick={() => setSelectedLog(null)} className="p-2 hover:bg-white/10 rounded-full transition-colors"><X className="w-6 h-6 text-white" /></button>
+              <button onClick={() => setSelectedLog(null)} className="p-2 hover:bg-white/10 rounded-full transition-colors"><X className="w-5 h-5 md:w-6 md:h-6 text-white" /></button>
             </div>
-            <div className="flex-1 p-6 overflow-y-auto custom-scrollbar space-y-4">
+            <div className="flex-1 p-4 md:p-6 overflow-y-auto custom-scrollbar space-y-3">
               {history.filter(h => {
                 const matchesChore = selectedLog.cid === "all" || h.choreId === selectedLog.cid || (h as any).category === selectedLog.cid;
                 const isReward = selectedLog.cid === "extra" && (h.choreId === "reward" || h.choreId === "reward-failed");
                 return (matchesChore || isReward) && (h.loggerId === selectedLog.pid || (h.helperIds && h.helperIds.includes(selectedLog.pid)));
               }).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).map((log, i) => (
-                <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col gap-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs font-black text-white uppercase">
+                <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-3 md:p-4 flex flex-col gap-2">
+                  <div className="flex justify-between items-start gap-4">
+                    <span className="text-[11px] md:text-xs font-black text-white uppercase leading-tight">
                       {log.customName || CHORE_LIST.find(c => c.id === log.choreId)?.label || log.choreId}
                     </span>
-                    <span className="text-[10px] text-muted-foreground font-bold">
-                      {new Date(log.timestamp).toLocaleDateString()} • {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    <span className="text-[9px] text-muted-foreground font-bold whitespace-nowrap">
+                      {new Date(log.timestamp).toLocaleDateString()}
                     </span>
                   </div>
                   {log.helperIds && log.helperIds.length > 0 && (
                     <div className="flex items-center gap-1.5">
                       <Users className="w-3 h-3 text-[#99f7ff]" />
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase">Partner: {log.helperIds.map(hid => getProfile(hid).name).join(", ")}</span>
+                      <span className="text-[9px] font-bold text-muted-foreground uppercase">Partner: {log.helperIds.map(hid => getProfile(hid).name).join(", ")}</span>
                     </div>
                   )}
-                  {log.notes && <p className="text-[11px] text-muted-foreground italic">"{log.notes}"</p>}
+                  {log.notes && <p className="text-[10px] text-muted-foreground italic leading-relaxed">"{log.notes}"</p>}
                   {log.pointsEarned !== undefined && log.pointsEarned > 0 && (
-                    <div className="text-[10px] font-black text-yellow-400 mt-1 uppercase">+{log.pointsEarned} REWARD POINTS</div>
+                    <div className="text-[10px] font-black text-yellow-400 mt-1 uppercase tracking-wider">+{log.pointsEarned} Points</div>
                   )}
                 </div>
               ))}

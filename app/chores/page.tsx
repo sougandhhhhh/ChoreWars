@@ -147,8 +147,13 @@ function MiniTimePicker({ hour, minute, period, onHourChange, onMinuteChange, on
 }
 
 // ─── Main Page ───
+import { useUIStore } from "@/stores/useUIStore"
+import { Menu } from "lucide-react"
+
 export default function ChoresPage() {
   const { profileOverrides = {}, currentUser } = useAuthStore()
+  const { toggleSidebar } = useUIStore()
+
   const getProfile = (id: string) => {
     const base = OPERATIVES.find(op => op.profileId === id) || OPERATIVES[0];
     const overrides = profileOverrides[id] || {};
@@ -312,19 +317,28 @@ export default function ChoresPage() {
   const formatDate = (d: Date) => d.toLocaleDateString("en-GB", { day:"2-digit", month:"short", year:"numeric" })
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className="flex min-h-screen bg-background">
       <Sidebar activePage="chores" />
 
-      <main className="flex-1 ml-64 flex flex-col overflow-hidden p-6">
-        <div className="flex items-center justify-between mb-5 shrink-0">
-          <div>
-            <h1 className="text-5xl font-black text-[#ff59e3] italic tracking-tight uppercase">Chore Queue</h1>
-            <p className="text-muted-foreground mt-1 text-sm">Fair rotation. No excuses. Everyone does everything.</p>
+      <main className="flex-1 lg:ml-64 flex flex-col p-4 md:p-6">
+        <div className="flex items-center justify-between mb-5 shrink-0 gap-4">
+          <div className="flex items-start gap-3 flex-1 min-w-0">
+            <button 
+              onClick={toggleSidebar}
+              className="p-2 mt-1 rounded-lg bg-secondary hover:bg-muted transition-colors lg:hidden shrink-0"
+            >
+              <Menu className="w-6 h-6 text-muted-foreground" />
+            </button>
+            <div className="min-w-0">
+              <h1 className="text-3xl md:text-5xl font-black text-[#ff59e3] italic tracking-tight uppercase truncate">Chore Queue</h1>
+              <p className="text-muted-foreground mt-1 text-sm truncate">Fair rotation. No excuses.</p>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button onClick={openExtraModal} className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[#99f7ff]/30 bg-[#99f7ff]/10 text-[#99f7ff] font-black text-xs uppercase tracking-wider hover:bg-[#99f7ff]/20 transition-all">
-              <PlusCircle className="w-4 h-4" />
-              Extra Chores
+          <div className="flex items-center gap-2 shrink-0">
+            <button onClick={openExtraModal} className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl border border-[#99f7ff]/30 bg-[#99f7ff]/10 text-[#99f7ff] font-black text-[10px] md:text-xs uppercase tracking-wider hover:bg-[#99f7ff]/20 transition-all">
+              <PlusCircle className="w-4 h-4 shrink-0" />
+              <span className="hidden xs:inline">Extra Chores</span>
+              <span className="xs:hidden">Extra</span>
             </button>
             <SyncButton />
             <button 
@@ -336,21 +350,19 @@ export default function ChoresPage() {
           </div>
         </div>
 
-
-
-        <div className="grid grid-cols-5 gap-4 flex-1 min-h-0">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 flex-1">
           {CHORES.map((chore) => {
             const queue = (choreQueues as any)[chore.id]
             const Icon = chore.icon
             return (
-              <div key={chore.id} className="bg-card rounded-xl border border-border flex flex-col min-h-0 overflow-hidden">
+              <div key={chore.id} className="bg-card rounded-xl border border-border flex flex-col overflow-hidden">
                 <div className="p-4 pb-3 border-b border-border shrink-0">
                   <div className="flex items-center gap-2 mb-1">
                     <Icon className="w-5 h-5" style={{ color: chore.accent }} />
                     <h2 className="text-xs font-black text-white tracking-wider uppercase">{chore.name}</h2>
                   </div>
                 </div>
-                <div className="flex-1 overflow-y-auto p-3 space-y-2 custom-scrollbar">
+                <div className="flex-1 p-3 space-y-2 custom-scrollbar">
                   {chore.isTeam ? (
                     (queue as string[][]).map((pair, idx) => (
                       <div key={idx} className={`rounded-lg p-2 border transition-all ${idx===0 ? "bg-gradient-to-r from-[#ff59e3]/15 to-transparent border-[#ff59e3]/40 shadow-[0_0_15px_rgba(255,89,227,0.1)]" : "bg-background/40 border-white/5 hover:border-white/10"}`}>
@@ -411,8 +423,8 @@ export default function ChoresPage() {
 
       {/* ─── Claim Modal ─── */}
       {claimModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm">
-          <div className="bg-[#0e0e0e] border border-white/10 rounded-2xl shadow-2xl w-full max-w-md mx-4 relative overflow-hidden scale-[1.2]"
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-[#0e0e0e] border border-white/10 rounded-2xl shadow-2xl w-full max-w-md relative overflow-hidden"
             style={{ boxShadow:`0 0 60px ${claimModal.accent}15` }}>
             <div className="h-0.5 w-full" style={{ background:`linear-gradient(90deg, transparent, ${claimModal.accent}, transparent)` }} />
             <div className="p-5">
@@ -444,7 +456,7 @@ export default function ChoresPage() {
                         <span className="font-bold">{selectedDate ? formatDate(selectedDate) : "Pick a date..."}</span>
                         <ChevronDown className="w-3.5 h-3.5" />
                       </button>
-                      {showCal && <div className="absolute left-0 top-full mt-1 z-50"><MiniCalendar value={selectedDate} onChange={d=>{setSelectedDate(d);setShowCal(false)}} accent={claimModal.accent} /></div>}
+                      {showCal && <div className="absolute left-0 bottom-full mb-1 z-50 md:top-full md:bottom-auto md:mt-1"><MiniCalendar value={selectedDate} onChange={d=>{setSelectedDate(d);setShowCal(false)}} accent={claimModal.accent} /></div>}
                     </div>
                     <div ref={timeRef} className="relative">
                       <div className="flex items-center gap-2 mb-1.5">
@@ -456,7 +468,7 @@ export default function ChoresPage() {
                         <span className="font-bold">{hour ? `${hour}:${minute} ${period}` : "Pick a time..."}</span>
                         <ChevronDown className="w-3.5 h-3.5" />
                       </button>
-                      {showTime && <div className="absolute left-0 top-full mt-1 z-50"><MiniTimePicker hour={hour} minute={minute} period={period} onHourChange={setHour} onMinuteChange={setMinute} onPeriodChange={setPeriod} accent={claimModal.accent} /></div>}
+                      {showTime && <div className="absolute left-0 bottom-full mb-1 z-50 md:top-full md:bottom-auto md:mt-1"><MiniTimePicker hour={hour} minute={minute} period={period} onHourChange={setHour} onMinuteChange={setMinute} onPeriodChange={setPeriod} accent={claimModal.accent} /></div>}
                     </div>
                     <div>
                       <div className="flex items-center gap-2 mb-1.5 text-glow">
@@ -504,8 +516,8 @@ export default function ChoresPage() {
 
       {/* ─── Extra Chore Modal ─── */}
       {extraModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm">
-          <div className="bg-[#0e0e0e] border border-white/10 rounded-2xl shadow-2xl w-full max-w-md mx-4 relative overflow-hidden scale-[1.05]" style={{ boxShadow:`0 0 60px #99f7ff15` }}>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-[#0e0e0e] border border-white/10 rounded-2xl shadow-2xl w-full max-w-md relative overflow-hidden" style={{ boxShadow:`0 0 60px #99f7ff15` }}>
             <div className="h-0.5 w-full" style={{ background:`linear-gradient(90deg, transparent, #99f7ff, transparent)` }} />
             <div className="p-5">
               <button onClick={closeModal} className="absolute top-4 right-4 text-muted-foreground hover:text-white transition-colors"><X className="w-4 h-4" /></button>
@@ -552,7 +564,7 @@ export default function ChoresPage() {
                         <span className="font-bold">{selectedDate ? formatDate(selectedDate) : "Pick a date..."}</span>
                         <ChevronDown className="w-3.5 h-3.5" />
                       </button>
-                      {showCal && <div className="absolute left-0 top-full mt-1 z-50"><MiniCalendar value={selectedDate} onChange={d=>{setSelectedDate(d);setShowCal(false)}} accent="#99f7ff" /></div>}
+                      {showCal && <div className="absolute left-0 bottom-full mb-1 z-50 md:top-full md:bottom-auto md:mt-1"><MiniCalendar value={selectedDate} onChange={d=>{setSelectedDate(d);setShowCal(false)}} accent="#99f7ff" /></div>}
                     </div>
                     <div ref={timeRef} className="relative">
                       <div className="flex items-center gap-2 mb-1.5"><Clock className="w-3 h-3 text-muted-foreground" /><span className="text-[10px] font-black text-muted-foreground tracking-widest uppercase">Time</span><button onClick={setNow} className="ml-auto text-[8px] text-[#99f7ff] uppercase font-black px-2 py-0.5 rounded-full border border-[#99f7ff]/40 bg-[#99f7ff]/10">Now</button></div>
@@ -560,7 +572,7 @@ export default function ChoresPage() {
                         <span className="font-bold">{hour ? `${hour}:${minute} ${period}` : "Pick a time..."}</span>
                         <ChevronDown className="w-3.5 h-3.5" />
                       </button>
-                      {showTime && <div className="absolute left-0 top-full mt-1 z-50"><MiniTimePicker hour={hour} minute={minute} period={period} onHourChange={setHour} onMinuteChange={setMinute} onPeriodChange={setPeriod} accent="#99f7ff" /></div>}
+                      {showTime && <div className="absolute left-0 bottom-full mb-1 z-50 md:top-full md:bottom-auto md:mt-1"><MiniTimePicker hour={hour} minute={minute} period={period} onHourChange={setHour} onMinuteChange={setMinute} onPeriodChange={setPeriod} accent="#99f7ff" /></div>}
                     </div>
                     <div>
                       <div className="flex items-center gap-2 mb-1.5 text-glow"><Users className="w-3 h-3 text-muted-foreground" /><span className="text-[10px] font-black text-muted-foreground tracking-widest uppercase">Helpers</span></div>

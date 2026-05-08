@@ -20,17 +20,17 @@ export default function LandingScreen({ onChooseCredentials, onChoosePasscode })
       </div>
 
       {/* Main Content */}
-      <main style={{position:'relative',zIndex:10,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',width:'100%',maxWidth:'1024px',padding:'0 24px',textAlign:'center',height:'100%'}}>
+      <main style={{position:'relative',zIndex:10,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',width:'100%',maxWidth:'1024px',padding:'40px 24px',textAlign:'center',minHeight:'100vh'}}>
 
         {/* Hero Title */}
-        <div style={{marginBottom:'32px',position:'relative'}}>
+        <div style={{marginBottom:'24px',position:'relative'}}>
           <h1
             className="title-neon-layered"
             data-text="CHOREWARS"
             style={{
               fontFamily:'"Orbitron",sans-serif',
               fontWeight:900,
-              fontSize:'clamp(56px,8.5vw,136px)',
+              fontSize:'clamp(48px,12vw,136px)',
               lineHeight:1,
               letterSpacing:'-0.05em',
             }}
@@ -40,7 +40,7 @@ export default function LandingScreen({ onChooseCredentials, onChoosePasscode })
         </div>
 
         {/* Tagline */}
-        <div style={{marginBottom:'80px'}}>
+        <div style={{marginBottom:'48px'}}>
           <MagneticGlowButton
             glowColor="#00f1fe"
             glowColor2="#ff59e3"
@@ -51,14 +51,14 @@ export default function LandingScreen({ onChooseCredentials, onChoosePasscode })
             spotlightSize={200}
             showOuterGlow={false}
           >
-            <p style={{fontFamily:'"Space Grotesk",sans-serif',fontSize:'clamp(14px,1.8vw,22px)',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.4em',color:'#ffffff',whiteSpace:'nowrap',margin:0,filter:'drop-shadow(0 0 10px rgba(0,0,0,0.9)) drop-shadow(0 0 20px rgba(0,0,0,0.6))'}}>
+            <p style={{fontFamily:'"Space Grotesk",sans-serif',fontSize:'clamp(12px,2vw,22px)',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.4em',color:'#ffffff',margin:0,filter:'drop-shadow(0 0 10px rgba(0,0,0,0.9)) drop-shadow(0 0 20px rgba(0,0,0,0.6))', padding: '8px 16px', lineHeight: 1.4, whiteSpace: 'nowrap'}}>
               GAMIFY YOUR HOUSEHOLD. <span style={{color:'#ff59e3'}}>CONQUER YOUR CHORES.</span>
             </p>
           </MagneticGlowButton>
         </div>
 
         {/* CTA Buttons */}
-        <div style={{display:'flex',flexDirection:'row',gap:'24px',alignItems:'center',justifyContent:'center',width:'100%',maxWidth:'672px',flexWrap:'wrap'}}>
+        <div style={{display:'flex',flexDirection:'row',gap:'16px',alignItems:'center',justifyContent:'center',width:'100%',maxWidth:'672px',flexWrap:'wrap'}}>
           {/* Login by Passcode */}
           <MagneticGlowButton
             onClick={onChoosePasscode}
@@ -103,12 +103,12 @@ export default function LandingScreen({ onChooseCredentials, onChoosePasscode })
       </main>
 
       {/* Footer Text */}
-      <footer style={{position:'absolute',bottom:0,width:'100%',zIndex:20,display:'flex',justifyContent:'space-between',alignItems:'center',padding:'16px 32px',fontFamily:'"Space Grotesk",sans-serif',fontSize:'12px',textTransform:'uppercase',letterSpacing:'0.05em',color:'#adaaaa',textShadow:'0 0 8px rgba(0,0,0,1), 0 0 16px rgba(0,0,0,0.8)'}}>
+      <footer style={{position:'fixed',bottom:0,width:'100%',zIndex:20,display:'flex',justifyContent:'space-between',alignItems:'center',padding:'12px 24px',fontFamily:'"Space Grotesk",sans-serif',fontSize:'10px',textTransform:'uppercase',letterSpacing:'0.05em',color:'#adaaaa',background: 'transparent'}}>
         <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
-          <span style={{width:'8px',height:'8px',borderRadius:'50%',background:'#99f7ff',boxShadow:'0 0 8px rgba(153,247,255,0.8)',animation:'pulse 2s cubic-bezier(0.4,0,0.6,1) infinite',display:'inline-block'}}></span>
+          <span style={{width:'6px',height:'6px',borderRadius:'50%',background:'#99f7ff',boxShadow:'0 0 8px rgba(153,247,255,0.8)',animation:'pulse 2s cubic-bezier(0.4,0,0.6,1) infinite',display:'inline-block'}}></span>
           <span>SERVER: <span style={{color:'#99f7ff',fontWeight:700}}>ONLINE</span></span>
         </div>
-        <div style={{display:'flex',alignItems:'center',gap:'24px'}}>
+        <div style={{display:'flex',alignItems:'center',gap:'16px'}}>
           <div>
             <span>VERSION: <span style={{color:'#ffffff'}}>v2.5.0</span></span>
           </div>

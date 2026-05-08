@@ -44,9 +44,13 @@ interface RewardPoll {
   status: "pending" | "completed"
 }
 
+import { useUIStore } from "@/stores/useUIStore"
+import { Menu } from "lucide-react"
+
 export default function Home() {
   const { currentUser: user, profileOverrides = {} } = useAuthStore()
   const { completionStats, history, warnings, rewardPolls, voteOnRewardPoll, choreQueues, issueWarning, completeWarning, logChore, toggleChat } = useChoreStore()
+  const { toggleSidebar } = useUIStore()
   const pid = user?.profileId || ""
 
   // Get user profile
@@ -208,18 +212,26 @@ export default function Home() {
   });
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className="flex min-h-screen bg-background">
       <Sidebar activePage="home" />
 
-<main className="flex-1 ml-64 flex flex-col overflow-hidden p-6">
+<main className="flex-1 lg:ml-64 flex flex-col p-4 md:p-6 pb-20 lg:pb-6">
         {/* Header */}
-        <div className="flex items-start justify-between mb-5 shrink-0">
-          <div className="flex-1">
-            <h1 className="text-5xl font-black text-[#ff59e3] italic tracking-tight uppercase">
-              Welcome, {getProfile(pid).name}!
-            </h1>
+        <div className="flex items-center justify-between mb-6 lg:mb-8 shrink-0 gap-4">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <button 
+              onClick={toggleSidebar}
+              className="p-2 rounded-lg bg-secondary hover:bg-muted transition-colors lg:hidden shrink-0"
+            >
+              <Menu className="w-6 h-6 text-muted-foreground" />
+            </button>
+            <div className="min-w-0">
+              <h1 className="text-2xl md:text-4xl lg:text-5xl font-black text-[#ff59e3] italic tracking-tight uppercase truncate">
+                Welcome, {getProfile(pid).name}!
+              </h1>
+            </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 shrink-0">
             <SyncButton />
             <button 
               onClick={toggleChat}
@@ -230,23 +242,25 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-5 flex-1 min-h-0">
-          <div className="grid grid-cols-2 gap-5 flex-1 min-h-0">
+        <div className="flex flex-col gap-6 flex-1">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 flex-1">
             {/* Left Column */}
-            <div className="flex flex-col gap-5 min-h-0">
+            <div className="flex flex-col gap-6">
               {/* Warning Box */}
               <div className={activeWarnings.length > 0 
-                ? "rounded-xl p-5 flex flex-col overflow-hidden transition-all duration-1000 h-[210px] bg-red-500/10 border-2 border-red-500 shadow-lg animate-pulse" 
-                : "rounded-xl p-5 flex flex-col overflow-hidden transition-all duration-1000 h-[210px] bg-card border border-pink-500/25"
+                ? "rounded-xl p-5 flex flex-col transition-all duration-1000 min-h-[220px] bg-red-500/10 border-2 border-red-500 shadow-lg animate-pulse" 
+                : "rounded-xl p-5 flex flex-col transition-all duration-1000 min-h-[220px] bg-card border border-pink-500/25"
               }>
-                <div className="flex items-center gap-2 mb-4 shrink-0">
-                  <AlertTriangle className={activeWarnings.length > 0 ? "w-6 h-6 text-red-500" : "w-6 h-6 text-pink-500"} />
-                  <h2 className={activeWarnings.length > 0 ? "text-2xl font-black uppercase tracking-tight text-red-500" : "text-2xl font-black uppercase tracking-tight text-white"}>
-                    Warnings
+                <div className="flex items-center gap-3 mb-5 shrink-0">
+                  <div className="p-2 rounded-lg bg-red-500/10">
+                    <AlertTriangle className={activeWarnings.length > 0 ? "w-6 h-6 text-red-500" : "w-6 h-6 text-pink-500"} />
+                  </div>
+                  <h2 className={activeWarnings.length > 0 ? "text-xl md:text-2xl font-black uppercase tracking-tight text-red-500" : "text-xl md:text-2xl font-black uppercase tracking-tight text-white"}>
+                    Active Warnings
                   </h2>
                   {activeWarnings.length > 0 && (
-                    <span className="bg-[#ff0000] text-white text-xs font-bold px-2.5 py-1 rounded-full animate-bounce">
-                      {activeWarnings.length} ACTIVE
+                    <span className="bg-[#ff0000] text-white text-[10px] font-black px-2.5 py-1 rounded-md animate-bounce tracking-widest">
+                      {activeWarnings.length}
                     </span>
                   )}
                 </div>
@@ -257,110 +271,131 @@ export default function Home() {
                       const chore = getChoreLabel(warning.choreId);
                       const timeLeft = 24 - Math.floor((Date.now() - new Date(warning.issuedAt).getTime()) / (1000 * 60 * 60));
                       return (
-                        <div key={index} className="p-2.5 bg-red-500/10 rounded-lg border border-red-500/20 flex items-center justify-between">
+                        <div key={index} className="p-4 bg-red-500/10 rounded-xl border border-red-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                           <div className="min-w-0">
-                            <p className="text-sm font-bold text-white truncate">{chore}</p>
-                            <p className="text-muted-foreground text-[10px] uppercase tracking-wider">{timeLeft}h left</p>
+                            <p className="text-sm font-black text-white uppercase tracking-wide">{chore}</p>
+                            <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-[0.2em] mt-0.5">{timeLeft}H REMAINING</p>
                           </div>
                           <button 
                             onClick={() => router.push('/chores?claim=' + warning.choreId)} 
-                            className="shrink-0 px-3 py-1.5 rounded bg-green-500/10 text-green-500 text-[10px] font-black uppercase tracking-wider border border-green-500/30 hover:bg-green-500/20 transition-colors"
+                            className="w-full sm:w-auto px-4 py-2 rounded-lg bg-green-500 text-black text-[10px] font-black uppercase tracking-widest hover:brightness-110 transition-all text-center"
                           >
-                            mark as done
+                            RESOLVE NOW
                           </button>
                         </div>
                       );
                     })
                    ) : (
-                    <div className="flex flex-col items-center justify-center h-full opacity-30">
-                      <AlertTriangle className="w-10 h-10 mb-3" />
-                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-center">No Active Warnings For You</p>
+                    <div className="flex flex-col items-center justify-center h-full opacity-20 py-8">
+                      <AlertTriangle className="w-12 h-12 mb-4" />
+                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-center">System Clear: No Active Warnings</p>
                     </div>
                    )}
                 </div>
               </div>
 
               {/* Quick Warn Box */}
-              <div className="rounded-xl p-5 flex flex-col overflow-hidden transition-all duration-1000 flex-1 bg-card border border-white/10">
-                <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-3 font-bold shrink-0">Upcoming Chores (Quick Warn)</p>
-                <div className="flex-1 overflow-hidden space-y-2 pr-1">
-                  {upcomingChores}
+              <div className="rounded-xl p-5 flex flex-col overflow-hidden transition-all duration-1000 flex-1 bg-card border border-white/10 min-h-[300px]">
+                <div className="flex items-center gap-2 mb-4 shrink-0">
+                  <Star className="w-4 h-4 text-[#ff59e3]" />
+                  <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-black">Upcoming Tasks • Quick Response</p>
+                </div>
+                <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                  {upcomingChores.length > 0 ? upcomingChores : (
+                    <div className="flex flex-col items-center justify-center h-full opacity-20 py-10">
+                      <Clock className="w-10 h-10 mb-4" />
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-center">No immediate tasks scheduled</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
 
-            <div className="flex flex-col gap-5 min-h-0">
-              {/* Recent Activity - short */}
-               <div className="bg-card rounded-xl border border-[#99f7ff]/25 p-5 flex flex-col flex-1 min-h-0 overflow-hidden">
-                <div className="flex items-center gap-2 mb-4 shrink-0">
-                  <Clock className="w-5 h-5 text-[#99f7ff]" />
-                  <h2 className="text-lg font-bold text-white uppercase tracking-tight">Recent Activity</h2>
+            <div className="flex flex-col gap-6 min-h-0">
+              {/* Recent Activity */}
+               <div className="bg-card rounded-xl border border-[#99f7ff]/25 p-5 flex flex-col flex-1 min-h-[400px] overflow-hidden">
+                <div className="flex items-center gap-3 mb-5 shrink-0">
+                  <div className="p-2 rounded-lg bg-[#99f7ff]/10">
+                    <Clock className="w-5 h-5 text-[#99f7ff]" />
+                  </div>
+                  <h2 className="text-xl font-black text-white uppercase tracking-tight">Transmission Feed</h2>
                 </div>
-                <div className="space-y-3 flex-1 overflow-hidden">
+                <div className="space-y-3 flex-1 overflow-y-auto pr-1 custom-scrollbar">
                   {recentChores.length > 0 ? (
                     recentChores.map((log, index) => {
                       const logger = getProfile(log.loggerId);
                       const chore = getChoreLabel(log.choreId);
                       return (
-                        <div key={index} className="flex items-center gap-4 px-4 py-3 bg-background/50 rounded-lg border border-white/5 h-[59px]">
-                          <div className="w-10 h-10 rounded-full bg-[#99f7ff]/10 flex items-center justify-center shrink-0">
-                            <span className="text-xl">{getChoreIcon(log.choreId)}</span>
+                        <div key={index} className="flex items-center gap-4 p-4 bg-background/50 rounded-xl border border-white/5 group hover:border-[#99f7ff]/30 transition-all">
+                          <div className="w-12 h-12 rounded-xl bg-[#99f7ff]/10 flex items-center justify-center shrink-0 border border-[#99f7ff]/20">
+                            <span className="text-2xl">{getChoreIcon(log.choreId)}</span>
                           </div>
                           <div className="flex-1 min-w-0">
-                              <p className="text-white font-bold text-[13px] truncate leading-tight">
+                              <p className="text-white font-bold text-sm leading-snug">
                                 {log.choreId === 'reward' ? (
                                   <span className="text-[#50fa7b]">
-                                    Result: {[logger.name, ...(log.helperIds || []).map((hid: string) => getProfile(hid).name)].join(", ")} WON reward poll
+                                    <span className="uppercase tracking-wide font-black">Success:</span> {[logger.name, ...(log.helperIds || []).map((hid: string) => getProfile(hid).name)].join(", ")} secured reward
                                   </span>
                                 ) : log.choreId === 'reward-failed' ? (
                                   <span className="text-[#ff716c]">
-                                    Result: {[logger.name, ...(log.helperIds || []).map((hid: string) => getProfile(hid).name)].join(", ")} LOST reward poll
+                                    <span className="uppercase tracking-wide font-black">Failed:</span> {[logger.name, ...(log.helperIds || []).map((hid: string) => getProfile(hid).name)].join(", ")} reward denied
                                   </span>
                                 ) : (
                                   <>
-                                    <span className="font-black">
+                                    <span className="font-black text-[#99f7ff]">
                                       {[logger.name, ...(log.helperIds || []).map((hid: string) => getProfile(hid).name)].join(" & ")}
-                                    </span> completed {chore}
+                                    </span>
+                                    <span className="text-white/80"> finalized {chore}</span>
                                   </>
                                 )}
                                 {log?.pointsEarned !== undefined && log.pointsEarned > 0 && (
-                                  <span className="text-green-400 font-bold ml-1"> (+{log.pointsEarned} pts)</span>
+                                  <span className="text-yellow-400 font-black ml-1.5"> +{log.pointsEarned}P</span>
                                 )}
                               </p>
-                            <p className="text-muted-foreground text-[11px] font-medium truncate uppercase tracking-widest mt-0.5">
-                              {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {new Date(log.timestamp).toLocaleDateString([], { day: '2-digit', month: 'short' })}
-                            </p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest">
+                                {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </p>
+                              <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
+                              <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest">
+                                {new Date(log.timestamp).toLocaleDateString([], { day: '2-digit', month: 'short' })}
+                              </p>
+                            </div>
                           </div>
                         </div>
                       );
                     })
                   ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <Clock className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                      <p className="text-xs uppercase tracking-widest font-black">No recent activity from roommates</p>
+                    <div className="flex flex-col items-center justify-center h-full opacity-20 py-10">
+                      <Clock className="w-10 h-10 mb-4" />
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-center">No recent house transmissions</p>
                     </div>
                   )}
                 </div>
               </div>
 
-               <div className="bg-card rounded-xl border border-[#f1fa8c]/25 p-5 flex flex-col h-[180px] shrink-0 overflow-hidden shadow-[0_0_40px_rgba(241,250,140,0.03)]">
-                <div className="flex items-center gap-2 mb-4 shrink-0">
-                  <Vote className="w-5 h-5 text-[#f1fa8c]" />
-                  <h2 className="text-sm font-black text-white uppercase tracking-widest">Reward Station</h2>
+               <div className="bg-card rounded-xl border border-[#f1fa8c]/25 p-5 flex flex-col min-h-[180px] shrink-0 overflow-hidden shadow-[0_0_40px_rgba(241,250,140,0.03)]">
+                <div className="flex items-center gap-3 mb-5 shrink-0">
+                  <div className="p-2 rounded-lg bg-[#f1fa8c]/10">
+                    <Vote className="w-5 h-5 text-[#f1fa8c]" />
+                  </div>
+                  <h2 className="text-sm font-black text-white uppercase tracking-widest">Reward Polling Station</h2>
                 </div>
-                <div className="flex-1 flex items-center justify-center">
+                <div className="flex-1 flex items-center justify-center w-full">
                   {pollItems.length > 0 ? (
-                    <RewardPollingStation 
-                      items={pollItems} 
-                      onVote={(item) => {
-                        const originalPoll = rewardPolls.find(p => p.id === item.id);
-                        if (originalPoll) setSelectedPoll(originalPoll);
-                      }}
-                    />
+                    <div className="w-full">
+                      <RewardPollingStation 
+                        items={pollItems} 
+                        onVote={(item) => {
+                          const originalPoll = rewardPolls.find(p => p.id === item.id);
+                          if (originalPoll) setSelectedPoll(originalPoll);
+                        }}
+                      />
+                    </div>
                   ) : (
-                    <div className="flex flex-col items-center justify-center h-full opacity-30">
-                      <Vote className="w-10 h-10 mb-3" />
-                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-center">No Active Polling Right Now</p>
+                    <div className="flex flex-col items-center justify-center h-full opacity-20">
+                      <Vote className="w-8 h-8 mb-2" />
+                      <p className="text-[9px] font-black uppercase tracking-[0.2em] text-center">No active polls in sector</p>
                     </div>
                   )}
                 </div>

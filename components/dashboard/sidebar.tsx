@@ -20,9 +20,13 @@ const navItems = [
   { id: "profile",     label: "Profile",     icon: User,         href: "/profile"     },
 ]
 
+import { useUIStore } from "@/stores/useUIStore"
+import { Menu, X as CloseIcon } from "lucide-react"
+
 export function Sidebar({ activePage = "home" }: SidebarProps) {
   const { currentUser } = useAuthStore();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const { isSidebarOpen, setSidebarOpen } = useUIStore()
   
   // Get profile data from OPERATIVES
   const profile = OPERATIVES.find(op => 
@@ -36,7 +40,23 @@ export function Sidebar({ activePage = "home" }: SidebarProps) {
 
   return (
     <>
-      <nav className="fixed left-0 top-0 h-screen flex flex-col py-5 px-5 z-50 bg-[#0e0e0e]/90 backdrop-blur-2xl w-64 border-r border-white/5 shadow-[10px_0_30px_-15px_rgba(0,242,255,0.12)] overflow-hidden">
+      {/* Backdrop for mobile */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[45] lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      <nav className={`fixed left-0 top-0 h-screen flex flex-col py-5 px-5 z-50 bg-[#0e0e0e]/95 backdrop-blur-2xl w-64 border-r border-white/5 shadow-[10px_0_30px_-15px_rgba(0,242,255,0.12)] transition-transform duration-300 ease-in-out lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+
+      {/* Close button for mobile */}
+      <button 
+        onClick={() => setSidebarOpen(false)}
+        className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-white lg:hidden z-20"
+      >
+        <CloseIcon className="w-5 h-5" />
+      </button>
 
       {/* Subtle grid background */}
       <div className="absolute inset-0 pointer-events-none opacity-10 bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:12px_12px]" />

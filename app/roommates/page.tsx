@@ -28,9 +28,13 @@ const allRoommatesData = [
 
 const PEOPLE = ["sanjjay", "sougandh", "chris", "haady", "kichu"]
 
+import { useUIStore } from "@/stores/useUIStore"
+import { Menu } from "lucide-react"
+
 export default function RoommatesPage() {
   const { profileOverrides = {}, currentUser } = useAuthStore()
   const { completionStats, history, rewardPolls, voteOnRewardPoll, toggleChat, refreshPolls } = useChoreStore()
+  const { toggleSidebar } = useUIStore()
   const [selectedLog, setSelectedLog] = useState<{ pid: string, cid: string } | null>(null)
   const [selectedPoll, setSelectedPoll] = useState<any | null>(null)
   const [confirmVote, setConfirmVote] = useState<{ poll: any, points: number } | null>(null)
@@ -123,19 +127,26 @@ export default function RoommatesPage() {
     : null;
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className="flex min-h-screen bg-background">
       <Sidebar activePage="roommates" />
 
-      <main className="flex-1 ml-64 flex flex-col overflow-hidden p-6">
-        <div className="flex items-start justify-between mb-5 shrink-0">
-          <div>
-            <h1 className="text-5xl font-black text-[#ff59e3] italic tracking-tight">THE ROOMIES</h1>
-            <p className="text-muted-foreground mt-1.5 max-w-lg text-sm">
-              Current standings and active profiles for the household.<br />
-              Dominance is temporary, chores are forever.
-            </p>
+      <main className="flex-1 lg:ml-64 flex flex-col p-4 md:p-6">
+        <div className="flex items-center justify-between mb-5 shrink-0 gap-4">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <button 
+              onClick={toggleSidebar}
+              className="p-2 rounded-lg bg-secondary hover:bg-muted transition-colors lg:hidden shrink-0"
+            >
+              <Menu className="w-6 h-6 text-muted-foreground" />
+            </button>
+            <div className="min-w-0">
+              <h1 className="text-3xl md:text-5xl font-black text-[#ff59e3] italic tracking-tight uppercase truncate">THE ROOMIES</h1>
+              <p className="text-muted-foreground mt-1.5 max-w-lg text-sm truncate">
+                Current standings and active profiles for the household.
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <SyncButton />
             <button onClick={toggleChat} className="p-2 rounded-lg bg-secondary hover:bg-muted transition-colors">
               <Bot className="w-5 h-5 text-muted-foreground" />
@@ -143,7 +154,7 @@ export default function RoommatesPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 grid-rows-2 gap-4 flex-1 min-h-0">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
           {roomiesMembers.map((m) => {
             const hasActivePoll = rewardPolls.some(p => p.status === "pending" && (p.requestedBy === m.profileId || (p.choreHelpers || []).includes(m.profileId)));
             return (
@@ -161,7 +172,7 @@ export default function RoommatesPage() {
                   </div>
                   <div>
                     <h3 className="text-base font-bold text-white">{m.name}</h3>
-                    <p className="text-[10px] text-muted-foreground tracking-wider">{m.codename}</p>
+                    <p className="text-[10px] text-muted-foreground tracking-wider uppercase">{m.codename}</p>
                   </div>
                 </div>
 
@@ -178,7 +189,7 @@ export default function RoommatesPage() {
                   })}
                 </div>
 
-                <div onClick={() => setSelectedLog({ pid: m.profileId, cid: "extra" })} className="flex items-center justify-between p-2 rounded-lg bg-[#99f7ff]/5 border border-[#99f7ff]/10 mb-4 hover:bg-[#99f7ff]/10 cursor-pointer transition-all">
+                <div onClick={() => setSelectedLog({ pid: m.profileId, cid: "extra" })} className="flex items-center justify-between p-2.5 rounded-lg bg-[#99f7ff]/5 border border-[#99f7ff]/10 mb-4 hover:bg-[#99f7ff]/10 cursor-pointer transition-all">
                   <div className="flex items-center gap-2">
                     <TrendingUp className="w-3 h-3 text-[#99f7ff]" />
                     <span className="text-[9px] font-black text-[#99f7ff] uppercase tracking-wider">Extra Chores</span>
@@ -197,31 +208,31 @@ export default function RoommatesPage() {
         </div>
 
         {selectedLog && selectedProfile && selectedChore && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-6">
-            <div className="bg-[#131313] border border-[#99f7ff]/30 shadow-[0_0_50px_rgba(153,247,255,0.15)] rounded-2xl w-full max-w-xl flex flex-col overflow-hidden max-h-[80vh]">
-              <div className="p-6 border-b border-white/10 flex items-center justify-between bg-gradient-to-b from-white/5 to-transparent">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-full border-2 border-[#99f7ff] overflow-hidden relative shadow-[0_0_15px_rgba(153,247,255,0.2)]">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 md:p-6">
+            <div className="bg-[#131313] border border-[#99f7ff]/30 shadow-[0_0_50px_rgba(153,247,255,0.15)] rounded-2xl w-full max-w-xl flex flex-col overflow-hidden max-h-[90vh]">
+              <div className="p-4 md:p-6 border-b border-white/10 flex items-center justify-between bg-gradient-to-b from-white/5 to-transparent">
+                <div className="flex items-center gap-3 md:gap-4">
+                  <div className="w-10 h-10 md:w-14 md:h-14 rounded-full border-2 border-[#99f7ff] overflow-hidden relative shrink-0">
                     <Image src={selectedProfile.animeImage || selectedProfile.image} alt="" fill className="object-cover" style={selectedProfile.imgStyle} />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <selectedChore.icon className={`w-4 h-4 ${selectedChore.color}`} />
-                      <h2 className="text-xl font-black text-white uppercase tracking-tight">
-                        {selectedChore.id === "all" ? "ALL CHORES" : (selectedChore.id === "extra" ? "EXTRA CHORES" : selectedChore.label)} LOGS
+                      <selectedChore.icon className={`w-3.5 h-3.5 md:w-4 md:h-4 ${selectedChore.color}`} />
+                      <h2 className="text-sm md:text-xl font-black text-white uppercase tracking-tight truncate">
+                        {selectedChore.id === "all" ? "ALL" : (selectedChore.id === "extra" ? "EXTRA" : selectedChore.label)} LOGS
                       </h2>
                     </div>
-                    <p className="text-xs text-muted-foreground font-bold tracking-widest uppercase mt-0.5">{selectedProfile.name} • CODENAME: {selectedProfile.codename}</p>
+                    <p className="text-[8px] md:text-xs text-muted-foreground font-bold tracking-widest uppercase mt-0.5 truncate">{selectedProfile.name} • CODENAME: {selectedProfile.codename}</p>
                   </div>
                 </div>
-                <button onClick={() => setSelectedLog(null)} className="p-2 hover:bg-white/10 rounded-full transition-colors"><X className="w-6 h-6 text-white" /></button>
+                <button onClick={() => setSelectedLog(null)} className="p-2 hover:bg-white/10 rounded-full transition-colors shrink-0"><X className="w-5 h-5 text-white" /></button>
               </div>
 
-              <div className="flex-1 p-6 flex flex-col min-h-0">
-                <div className="flex gap-4 mb-8">
-                  <div className="flex-1 bg-white/5 rounded-xl p-4 border border-white/5 flex flex-col items-center justify-center gap-1">
-                    <span className="text-[10px] text-muted-foreground font-black uppercase tracking-tighter">Total Completions</span>
-                    <span className="text-3xl font-black text-[#99f7ff]">
+              <div className="flex-1 p-4 md:p-6 flex flex-col min-h-0">
+                <div className="flex gap-3 md:gap-4 mb-6 md:mb-8">
+                  <div className="flex-1 bg-white/5 rounded-xl p-3 md:p-4 border border-white/5 flex flex-col items-center justify-center gap-1">
+                    <span className="text-[8px] md:text-[10px] text-muted-foreground font-black uppercase tracking-tighter">Total Completions</span>
+                    <span className="text-xl md:text-3xl font-black text-[#99f7ff]">
                       {selectedChore.id === "all" 
                         ? Object.values(completionStats).reduce((sum, choreData) => sum + (choreData[selectedLog.pid]?.count || 0), 0)
                         : (selectedChore.id === "extra" 
@@ -229,46 +240,44 @@ export default function RoommatesPage() {
                             : (completionStats[selectedChore.id]?.[selectedLog.pid]?.count || 0))}
                     </span>
                   </div>
-                  <div className="flex-1 bg-white/5 rounded-xl p-4 border border-white/5 flex flex-col items-center justify-center gap-1">
-                    <span className="text-[10px] text-muted-foreground font-black uppercase tracking-tighter">Current Rank</span>
-                    <span className="text-3xl font-black text-[#ff59e3]">#{getRank(selectedChore.id, selectedLog.pid)}</span>
+                  <div className="flex-1 bg-white/5 rounded-xl p-3 md:p-4 border border-white/5 flex flex-col items-center justify-center gap-1">
+                    <span className="text-[8px] md:text-[10px] text-muted-foreground font-black uppercase tracking-tighter">Current Rank</span>
+                    <span className="text-xl md:text-3xl font-black text-[#ff59e3]">#{getRank(selectedChore.id, selectedLog.pid)}</span>
                   </div>
                 </div>
 
-
-
                 <div className="flex flex-col min-h-0 flex-1">
-                  <h3 className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-4 flex items-center gap-2 flex-shrink-0"><Clock className="w-3 h-3" /> CHRONOLOGICAL DOSSIER</h3>
+                  <h3 className="text-[9px] md:text-[10px] font-black text-white/40 uppercase tracking-widest mb-4 flex items-center gap-2 flex-shrink-0"><Clock className="w-3 h-3" /> CHRONOLOGICAL DOSSIER</h3>
                   <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-3">
                     {activeLogs.length > 0 ? activeLogs.map((log, i) => {
                       const otherParticipants: string[] = [];
                       if (log.loggerId !== selectedLog.pid) otherParticipants.push(log.loggerId);
                       if (log.helperIds) log.helperIds.forEach(hid => { if (hid !== selectedLog.pid) otherParticipants.push(hid); });
                       return (
-                        <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col gap-3 group hover:border-[#99f7ff]/30 transition-all">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
+                        <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-3 md:p-4 flex flex-col gap-3 group hover:border-[#99f7ff]/30 transition-all">
+                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                            <div className="flex items-center gap-3 md:gap-4">
                               {selectedChore.id === "all" && (
-                                <div className="w-8 h-8 rounded-lg bg-black/40 flex items-center justify-center border border-white/5">
+                                <div className="w-8 h-8 rounded-lg bg-black/40 flex items-center justify-center border border-white/5 shrink-0">
                                   {(() => {
                                     const c = [...CHORE_LIST, { id: "extra", icon: TrendingUp, color: "text-[#99f7ff]" }, { id: "reward", icon: Star, color: "text-[#50fa7b]" }, { id: "reward-failed", icon: X, color: "text-[#ff716c]" }].find(cx => cx.id === log.choreId);
                                     const Icon = c?.icon || TrendingUp; return <Icon className={`w-4 h-4 ${c?.color}`} />;
                                   })()}
                                 </div>
                               )}
-                              <div className="flex flex-col gap-1">
-                                <span className="text-xs font-black text-white uppercase tracking-wide">{log.customName || (log.choreId === "extra" ? "Extra Chore" : (new Date(log.timestamp).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })))} {log.pointsEarned !== undefined && log.pointsEarned > 0 && <span className="text-[#50fa7b] ml-2">+{log.pointsEarned} PTS</span>}</span>
-                                <span className="text-[10px] text-muted-foreground font-bold tracking-widest">{log.customName || log.choreId === "extra" ? new Date(log.timestamp).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) + " • " + new Date(log.timestamp).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) : new Date(log.timestamp).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}</span>
+                              <div className="flex flex-col gap-0.5">
+                                <span className="text-[11px] md:text-xs font-black text-white uppercase tracking-wide">{log.customName || (log.choreId === "extra" ? "Extra Chore" : (new Date(log.timestamp).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })))} {log.pointsEarned !== undefined && log.pointsEarned > 0 && <span className="text-[#50fa7b] ml-2">+{log.pointsEarned} PTS</span>}</span>
+                                <span className="text-[9px] md:text-[10px] text-muted-foreground font-bold tracking-widest">{log.customName || log.choreId === "extra" ? new Date(log.timestamp).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) + " • " + new Date(log.timestamp).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) : new Date(log.timestamp).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}</span>
                               </div>
                             </div>
                             {otherParticipants.length > 0 && (
-                              <div className="flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-lg border border-white/5">
-                                <Users className="w-3 h-3 text-[#99f7ff]" /><span className="text-[9px] font-black text-muted-foreground uppercase tracking-wider">{otherParticipants.length > 1 ? "Partners:" : "Partner:"}</span>
-                                <span className="text-[10px] font-black text-white uppercase flex gap-2">{otherParticipants.map((pid, idx) => (<span key={pid}>{getProfile(pid).name}{idx < otherParticipants.length - 1 ? "," : ""}</span>))}</span>
+                              <div className="flex items-center gap-2 bg-black/40 px-2.5 py-1 rounded-lg border border-white/5 self-start md:self-auto">
+                                <Users className="w-3 h-3 text-[#99f7ff]" /><span className="text-[8px] font-black text-muted-foreground uppercase tracking-wider">{otherParticipants.length > 1 ? "Partners:" : "Partner:"}</span>
+                                <span className="text-[9px] font-black text-white uppercase flex gap-1.5">{otherParticipants.map((pid, idx) => (<span key={pid}>{getProfile(pid).name}{idx < otherParticipants.length - 1 ? "," : ""}</span>))}</span>
                               </div>
                             )}
                           </div>
-                          {log.notes && <div className="mt-1 px-3 py-2 rounded-lg bg-white/5 border border-white/5"><p className="text-[11px] text-muted-foreground italic leading-relaxed">"{log.notes}"</p></div>}
+                          {log.notes && <div className="mt-1 px-3 py-2 rounded-lg bg-white/5 border border-white/5"><p className="text-[10px] md:text-[11px] text-muted-foreground italic leading-relaxed">"{log.notes}"</p></div>}
                         </div>
                       );
                     }) : (
