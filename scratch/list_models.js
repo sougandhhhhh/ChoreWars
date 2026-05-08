@@ -1,4 +1,4 @@
-const apiKey = 'AIzaSyDXU4hBVht0QbbGMINBZh8a7slHFZlq4hQ';
+const apiKey = 'REDACTED_USE_ENV_VAR';
 
 async function listModels() {
   try {
